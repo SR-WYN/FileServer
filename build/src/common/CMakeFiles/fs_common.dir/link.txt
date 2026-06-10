@@ -1,2 +1,0 @@
-/usr/bin/ar qc libfs_common.a CMakeFiles/fs_common.dir/utils.cpp.o CMakeFiles/fs_common.dir/Log.cpp.o
-/usr/bin/ranlib libfs_common.a

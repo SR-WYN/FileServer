@@ -1,2 +1,0 @@
-/usr/bin/ar qc libfs_config.a CMakeFiles/fs_config.dir/ConfigMgr.cpp.o
-/usr/bin/ranlib libfs_config.a
