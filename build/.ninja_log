@@ -1,0 +1,20 @@
+# ninja log v5
+2752	3050	1781060661766441820	src/Debug/FileServer	31ce85113ef52aa6
+637	2752	1781060661478644511	src/CMakeFiles/FileServer.dir/Debug/__/proto_gen/message.grpc.pb.cc.o	1291ca1a0939b229
+962	1014	1781060659743518705	src/infra/mysql/Debug/libfs_mysql.a	a4ac6f4d323f8f1f
+1	21	1781060658756061497	proto_gen/message.pb.cc	57d5ce3e834f06bb
+892	961	1781060659693466999	src/common/Debug/libfs_common.a	e65afffddd76e5cc
+1	21	1781060658756061497	proto_gen/message.pb.h	57d5ce3e834f06bb
+1	21	1781060658756061497	proto_gen/message.grpc.pb.h	57d5ce3e834f06bb
+22	1024	1781060659756031632	src/CMakeFiles/FileServer.dir/Debug/__/proto_gen/message.pb.cc.o	df7907fcc26efb5e
+1	21	1781060658756061497	/home/asus/NETLEARN/FileServer/build/proto_gen/message.pb.h	57d5ce3e834f06bb
+22	1820	1781060660548516975	src/CMakeFiles/FileServer.dir/Debug/app/FileServer.cpp.o	68da60e18688efb3
+1	21	1781060658756061497	/home/asus/NETLEARN/FileServer/build/proto_gen/message.grpc.pb.cc	57d5ce3e834f06bb
+1	21	1781060658756061497	/home/asus/NETLEARN/FileServer/build/proto_gen/message.pb.cc	57d5ce3e834f06bb
+2	632	1781060659362099477	src/common/CMakeFiles/fs_common.dir/Debug/utils.cpp.o	fb0c5126fae8b93b
+1	21	1781060658756061497	/home/asus/NETLEARN/FileServer/build/proto_gen/message.grpc.pb.h	57d5ce3e834f06bb
+1289	707	1781060659430695543	src/infra/config/Debug/libfs_config.a	22a3c66c8eee1df0
+2	1287	1781060660020882578	src/infra/config/CMakeFiles/fs_config.dir/Debug/ConfigMgr.cpp.o	22f27083da2c50e5
+2	1159	1781060659888265286	src/infra/mysql/CMakeFiles/fs_mysql.dir/Debug/MySqlPool.cpp.o	51043c3cfe879ce2
+1	21	1781060658756061497	proto_gen/message.grpc.pb.cc	57d5ce3e834f06bb
+2	887	1781060659618389440	src/common/CMakeFiles/fs_common.dir/Debug/Log.cpp.o	c892fe53e01ce849

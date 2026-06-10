@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfs_mysql.a CMakeFiles/fs_mysql.dir/MySqlPool.cpp.o
+/usr/bin/ranlib libfs_mysql.a

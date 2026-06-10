@@ -1,0 +1,544 @@
+{
+	"configurations" : 
+	[
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Debug-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"jsonFile" : "directory-src-Debug-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/common",
+					"jsonFile" : "directory-src.common-Debug-26ca1aee19599f655637.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/common",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src/domain",
+					"jsonFile" : "directory-src.domain-Debug-0848c45e7ccd85b15697.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/domain"
+				},
+				{
+					"build" : "src/infra/config",
+					"jsonFile" : "directory-src.infra.config-Debug-c1aeba42757db9189f9d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/config",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/infra/mysql",
+					"jsonFile" : "directory-src.infra.mysql-Debug-655e97c7e01365e3fd15.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/mysql",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/app",
+					"jsonFile" : "directory-src.app-Debug-2e167ed549b5f7501b6a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/app"
+				}
+			],
+			"name" : "Debug",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"name" : "FileServer",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "FileServer::@145eef247bfb46b6828c",
+					"jsonFile" : "target-FileServer-Debug-a99111eaac5583306a7e.json",
+					"name" : "FileServer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fileserver_proto_gen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fileserver_proto_gen-Debug-63a7dcd000ce763e0433.json",
+					"name" : "fileserver_proto_gen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "fs_common::@af79f3804eddddbfa7f1",
+					"jsonFile" : "target-fs_common-Debug-8aa8957fa2b49806704b.json",
+					"name" : "fs_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "fs_config::@b05f8e8c42e2f9c4de4f",
+					"jsonFile" : "target-fs_config-Debug-743df223709013decd37.json",
+					"name" : "fs_config",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "fs_mysql::@cd099e8d36a0998e8eeb",
+					"jsonFile" : "target-fs_mysql-Debug-b92688621ce551b0c829.json",
+					"name" : "fs_mysql",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-Release-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"jsonFile" : "directory-src-Release-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/common",
+					"jsonFile" : "directory-src.common-Release-26ca1aee19599f655637.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/common",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src/domain",
+					"jsonFile" : "directory-src.domain-Release-0848c45e7ccd85b15697.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/domain"
+				},
+				{
+					"build" : "src/infra/config",
+					"jsonFile" : "directory-src.infra.config-Release-c1aeba42757db9189f9d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/config",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/infra/mysql",
+					"jsonFile" : "directory-src.infra.mysql-Release-655e97c7e01365e3fd15.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/mysql",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/app",
+					"jsonFile" : "directory-src.app-Release-2e167ed549b5f7501b6a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/app"
+				}
+			],
+			"name" : "Release",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"name" : "FileServer",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "FileServer::@145eef247bfb46b6828c",
+					"jsonFile" : "target-FileServer-Release-eaa20b7f51badd406dc0.json",
+					"name" : "FileServer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fileserver_proto_gen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fileserver_proto_gen-Release-45d85dd267effc80e21c.json",
+					"name" : "fileserver_proto_gen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "fs_common::@af79f3804eddddbfa7f1",
+					"jsonFile" : "target-fs_common-Release-fca154c7e4d229071dd8.json",
+					"name" : "fs_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "fs_config::@b05f8e8c42e2f9c4de4f",
+					"jsonFile" : "target-fs_config-Release-b01182e3b4136fa32efb.json",
+					"name" : "fs_config",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "fs_mysql::@cd099e8d36a0998e8eeb",
+					"jsonFile" : "target-fs_mysql-Release-42e5637d50cee918b366.json",
+					"name" : "fs_mysql",
+					"projectIndex" : 0
+				}
+			]
+		},
+		{
+			"directories" : 
+			[
+				{
+					"build" : ".",
+					"childIndexes" : 
+					[
+						1
+					],
+					"jsonFile" : "directory-.-RelWithDebInfo-f5ebdc15457944623624.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"projectIndex" : 0,
+					"source" : ".",
+					"targetIndexes" : 
+					[
+						1
+					]
+				},
+				{
+					"build" : "src",
+					"childIndexes" : 
+					[
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"jsonFile" : "directory-src-RelWithDebInfo-b6cf2213fc5053b67c22.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 0,
+					"projectIndex" : 0,
+					"source" : "src",
+					"targetIndexes" : 
+					[
+						0
+					]
+				},
+				{
+					"build" : "src/common",
+					"jsonFile" : "directory-src.common-RelWithDebInfo-26ca1aee19599f655637.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/common",
+					"targetIndexes" : 
+					[
+						2
+					]
+				},
+				{
+					"build" : "src/domain",
+					"jsonFile" : "directory-src.domain-RelWithDebInfo-0848c45e7ccd85b15697.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/domain"
+				},
+				{
+					"build" : "src/infra/config",
+					"jsonFile" : "directory-src.infra.config-RelWithDebInfo-c1aeba42757db9189f9d.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/config",
+					"targetIndexes" : 
+					[
+						3
+					]
+				},
+				{
+					"build" : "src/infra/mysql",
+					"jsonFile" : "directory-src.infra.mysql-RelWithDebInfo-655e97c7e01365e3fd15.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/infra/mysql",
+					"targetIndexes" : 
+					[
+						4
+					]
+				},
+				{
+					"build" : "src/app",
+					"jsonFile" : "directory-src.app-RelWithDebInfo-2e167ed549b5f7501b6a.json",
+					"minimumCMakeVersion" : 
+					{
+						"string" : "3.19"
+					},
+					"parentIndex" : 1,
+					"projectIndex" : 0,
+					"source" : "src/app"
+				}
+			],
+			"name" : "RelWithDebInfo",
+			"projects" : 
+			[
+				{
+					"directoryIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4,
+						5,
+						6
+					],
+					"name" : "FileServer",
+					"targetIndexes" : 
+					[
+						0,
+						1,
+						2,
+						3,
+						4
+					]
+				}
+			],
+			"targets" : 
+			[
+				{
+					"directoryIndex" : 1,
+					"id" : "FileServer::@145eef247bfb46b6828c",
+					"jsonFile" : "target-FileServer-RelWithDebInfo-93a5641abc9e7f16c406.json",
+					"name" : "FileServer",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 0,
+					"id" : "fileserver_proto_gen::@6890427a1f51a3e7e1df",
+					"jsonFile" : "target-fileserver_proto_gen-RelWithDebInfo-f86ed85e36305a834198.json",
+					"name" : "fileserver_proto_gen",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 2,
+					"id" : "fs_common::@af79f3804eddddbfa7f1",
+					"jsonFile" : "target-fs_common-RelWithDebInfo-06b3be86fd4ca2129293.json",
+					"name" : "fs_common",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 4,
+					"id" : "fs_config::@b05f8e8c42e2f9c4de4f",
+					"jsonFile" : "target-fs_config-RelWithDebInfo-24236d472b19040be00c.json",
+					"name" : "fs_config",
+					"projectIndex" : 0
+				},
+				{
+					"directoryIndex" : 5,
+					"id" : "fs_mysql::@cd099e8d36a0998e8eeb",
+					"jsonFile" : "target-fs_mysql-RelWithDebInfo-8f7a26b5b685afe0aebc.json",
+					"name" : "fs_mysql",
+					"projectIndex" : 0
+				}
+			]
+		}
+	],
+	"kind" : "codemodel",
+	"paths" : 
+	{
+		"build" : "/home/asus/NETLEARN/FileServer/build",
+		"source" : "/home/asus/NETLEARN/FileServer"
+	},
+	"version" : 
+	{
+		"major" : 2,
+		"minor" : 6
+	}
+}

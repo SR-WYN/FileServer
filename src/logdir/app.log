@@ -1,0 +1,3 @@
+2026-06-10 11:04:23.337 [info] [110116] FileServer starting
+2026-06-10 11:04:23.337 [info] [110116] FileServer started, waiting for signal...
+2026-06-10 11:04:27.542 [info] [110116] Shutdown signal received, FileServer stopping

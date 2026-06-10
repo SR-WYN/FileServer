@@ -1,0 +1,2 @@
+add_library(fs_domain INTERFACE)
+target_link_libraries(fs_domain INTERFACE fileserver_includes)
