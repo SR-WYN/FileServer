@@ -1,3 +1,4 @@
+// utils.h - 通用工具函数：URL 编解码、Defer 守卫、JSON HTTP 响应
 #pragma once
 #include <functional>
 #include <memory>

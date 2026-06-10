@@ -1,3 +1,5 @@
+// DbSession.h - 数据库会话工具类
+// 封装连接获取/归还（RAII）、预编译语句执行、查询结果映射
 #pragma once
 
 #include "MySqlPool.h"

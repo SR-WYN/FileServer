@@ -13,11 +13,16 @@ namespace http = beast::http;
 namespace net = boost::asio;
 using tcp = boost::asio::ip::tcp;
 
+/// HTTP 连接处理类
+/// 异步读取 HTTP 请求 → 分发到 LogicSystem 路由 → 异步写回响应
 class HttpConnection : public std::enable_shared_from_this<HttpConnection>
 {
 public:
-    HttpConnection(boost::asio::io_context &ioc);
+    explicit HttpConnection(boost::asio::io_context &ioc);
+
+    /// 开始异步读取 HTTP 请求
     void start();
+
     tcp::socket &GetSocket();
     http::response<http::dynamic_body> &GetResponse();
     http::request<http::dynamic_body> &GetRequest();
@@ -28,11 +33,12 @@ private:
     void writeResponse();
     void handleReq();
     void preParseGetParam();
-    tcp::socket _socket;
-    beast::flat_buffer _buffer{8192};
-    http::request<http::dynamic_body> _request;
-    http::response<http::dynamic_body> _response;
-    net::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)};
-    std::string _get_url;
-    std::unordered_map<std::string, std::string> _get_params;
+
+    tcp::socket _socket;                                         ///< TCP 套接字
+    beast::flat_buffer _buffer{8192};                             ///< 读缓冲区
+    http::request<http::dynamic_body> _request;                  ///< 当前请求
+    http::response<http::dynamic_body> _response;                ///< 待发送响应
+    net::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)}; ///< 超时定时器
+    std::string _get_url;                                        ///< GET URL 路径（不含查询参数）
+    std::unordered_map<std::string, std::string> _get_params;    ///< GET URL 查询参数
 };

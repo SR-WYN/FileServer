@@ -1,3 +1,4 @@
+// utils.cpp - 通用工具函数实现：URL 编解码、JSON HTTP 响应封装
 #include "utils.h"
 #include "HttpConnection.h"
 #include "Log.h"

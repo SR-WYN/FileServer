@@ -1,3 +1,4 @@
+// MySqlPool.cpp - MySQL 连接池实现：初始化连接、心跳检查、断线重连补偿
 #include "MySqlPool.h"
 #include "utils.h"
 #include <cppconn/exception.h>

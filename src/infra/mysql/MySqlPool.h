@@ -1,3 +1,5 @@
+// MySqlPool.h - MySQL 连接池
+// 预创建连接、定期心跳检查、断线自动重连
 #pragma once
 #include <atomic>
 #include <condition_variable>

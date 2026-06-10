@@ -1,3 +1,6 @@
+// Log.h - 日志系统，基于 spdlog 的多模块文件日志封装
+// 每个模块独立文件输出（app.log / http.log / mysql.log / grpc.log / file.log）
+// 提供 LOGI/LOGE/LOGW 等便捷宏
 #pragma once
 
 #include "LogModule.h"

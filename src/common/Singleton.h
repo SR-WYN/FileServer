@@ -1,3 +1,5 @@
+// Singleton.h - 单例模板基类
+// 使用 Meyers' Singleton（C++11 线程安全静态局部变量）
 #pragma once
 #include <iostream>
 

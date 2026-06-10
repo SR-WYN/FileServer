@@ -1,3 +1,5 @@
+// ConfigMgr.cpp - 配置管理器实现
+// 解析 config.json（服务器配置/日志/MySQL）+ file_rules.json（上传规则）
 #include "ConfigMgr.h"
 #include <algorithm>
 #include <cctype>

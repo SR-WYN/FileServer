@@ -1,3 +1,5 @@
+// ConfigMgr.h - 配置管理器单例
+// 统一加载 config.json 和 file_rules.json，通过 SectionInfo 分段访问
 #pragma once
 #include "Log.h"
 #include "Singleton.h"

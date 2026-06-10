@@ -1,3 +1,5 @@
+// LogModule.h - 日志模块枚举
+// 定义 FileServer 的日志模块：App/Config/Http/Mysql/Grpc/File
 #pragma once
 
 #include <array>
