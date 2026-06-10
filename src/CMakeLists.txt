@@ -6,6 +6,11 @@ target_include_directories(fileserver_includes INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/domain
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/config
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/mysql
+    ${CMAKE_CURRENT_SOURCE_DIR}/application
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/interface
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/common
+    ${CMAKE_CURRENT_SOURCE_DIR}/storage
+    ${CMAKE_CURRENT_SOURCE_DIR}/net
     ${PROTO_GEN_DIR}
 )
 
