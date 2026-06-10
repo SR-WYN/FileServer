@@ -1,0 +1,38 @@
+// HttpConnection.h - HTTP 连接处理类，负责解析 HTTP 请求并分发到 LogicSystem
+#pragma once
+
+#include <boost/asio.hpp>
+#include <boost/beast.hpp>
+#include <boost/beast/http.hpp>
+#include <boost/beast/http/dynamic_body.hpp>
+#include <string>
+#include <unordered_map>
+
+namespace beast = boost::beast;
+namespace http = beast::http;
+namespace net = boost::asio;
+using tcp = boost::asio::ip::tcp;
+
+class HttpConnection : public std::enable_shared_from_this<HttpConnection>
+{
+public:
+    HttpConnection(boost::asio::io_context &ioc);
+    void start();
+    tcp::socket &GetSocket();
+    http::response<http::dynamic_body> &GetResponse();
+    http::request<http::dynamic_body> &GetRequest();
+    std::unordered_map<std::string, std::string> &GetParams();
+
+private:
+    void checkDeadline();
+    void writeResponse();
+    void handleReq();
+    void preParseGetParam();
+    tcp::socket _socket;
+    beast::flat_buffer _buffer{8192};
+    http::request<http::dynamic_body> _request;
+    http::response<http::dynamic_body> _response;
+    net::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)};
+    std::string _get_url;
+    std::unordered_map<std::string, std::string> _get_params;
+};

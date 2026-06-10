@@ -34,6 +34,7 @@ public:
 
 private:
     void loadLogConfig();
+    void loadFileRules();
     // 私有构造函数，防止外部实例化
     ConfigMgr();
 

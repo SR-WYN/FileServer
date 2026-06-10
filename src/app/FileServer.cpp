@@ -1,19 +1,19 @@
+// FileServer.cpp - 文件服务器入口，初始化配置、日志、网络服务
+#include "AsioIOServicePool.h"
+#include "CServer.h"
 #include "ConfigMgr.h"
 #include "Log.h"
 
+#include <atomic>
+#include <boost/asio.hpp>
+#include <chrono>
 #include <csignal>
 #include <iostream>
-#include <atomic>
 #include <thread>
-#include <chrono>
 
 static std::atomic<bool> g_quit{false};
-
-void signalHandler(int signal)
-{
-    (void)signal;
-    g_quit.store(true);
-}
+static std::unique_ptr<boost::asio::io_context> g_ioc;
+static std::shared_ptr<CServer> g_server;
 
 int main()
 {
@@ -28,25 +28,38 @@ int main()
         }
         LOGI(LogModule::App, "FileServer starting");
 
-        // 2. 注册信号处理
-        struct sigaction sa;
-        sa.sa_handler = signalHandler;
-        sigemptyset(&sa.sa_mask);
-        sa.sa_flags = SA_RESTART;
-        sigaction(SIGINT, &sa, nullptr);
-        sigaction(SIGTERM, &sa, nullptr);
+        // 2. 启动 HTTP 服务器
+        auto &cfg = ConfigMgr::getInstance();
+        unsigned short port = static_cast<unsigned short>(std::stoul(cfg["FileServer"]["Port"]));
 
-        // 3. 后续步骤在此扩展网络服务等
+        AsioIOServicePool::getInstance();
+        g_ioc = std::make_unique<boost::asio::io_context>();
+        g_server = std::make_shared<CServer>(*g_ioc, port);
+        g_server->start();
 
-        LOGI(LogModule::App, "FileServer started, waiting for signal...");
+        // 3. 用信号处理器安全退出
+        boost::asio::signal_set signals(*g_ioc, SIGINT, SIGTERM);
+        signals.async_wait([&](boost::system::error_code ec, int sig) {
+            if (!ec)
+            {
+                LOGI(LogModule::App, "Signal {} received, shutting down...", sig);
+                g_quit.store(true);
+                g_ioc->stop();
+            }
+        });
 
-        // 4. 主线程等待退出信号
-        while (!g_quit.load())
-        {
-            std::this_thread::sleep_for(std::chrono::milliseconds(200));
-        }
+        LOGI(LogModule::App, "FileServer started on port {}, waiting for signal...", port);
 
-        LOGI(LogModule::App, "Shutdown signal received, FileServer stopping");
+        // 4. 主循环
+        g_ioc->run();
+        LOGI(LogModule::App, "FileServer stopping...");
+
+        // 5. 先停连接池线程，再销毁服务器资源
+        AsioIOServicePool::getInstance().stop();
+        g_server.reset();
+        g_ioc.reset();
+
+        LOGI(LogModule::App, "FileServer stopped gracefully");
         Log::shutdown();
     }
     catch (std::exception &e)

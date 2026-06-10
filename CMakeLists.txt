@@ -16,9 +16,9 @@ find_program(MYSQL_CONFIG_EXECUTABLE NAMES mysql_config)
 
 find_program(_GRPC_CPP_PLUGIN_EXECUTABLE grpc_cpp_plugin)
 
-# --- Proto 生成（复用 GateServer 的 proto，用于 gRPC 客户端） ---
+# --- Proto 生成（FileServer 自身 proto） ---
 
-set(PROTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../GateServer/proto")
+set(PROTO_DIR "${CMAKE_CURRENT_SOURCE_DIR}/proto")
 file(GLOB PROTO_FILES "${PROTO_DIR}/*.proto")
 
 set(PROTO_GEN_DIR "${CMAKE_CURRENT_BINARY_DIR}/proto_gen")

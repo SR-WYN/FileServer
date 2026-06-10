@@ -5,7 +5,7 @@
 #include <string>
 
 /// Token 验证响应
-struct ValidateTokenRsp
+struct TokenValidateResult
 {
     int error = 0;
     int uid = 0;
@@ -20,6 +20,6 @@ public:
     /// 验证用户 Token 是否有效
     /// @param uid   用户 ID
     /// @param token 登录时颁发的 Token
-    /// @return ValidateTokenRsp（error == 0 表示有效）
-    virtual ValidateTokenRsp validateToken(int uid, const std::string &token) = 0;
+    /// @return TokenValidateResult（error == 0 表示有效）
+    virtual TokenValidateResult validateToken(int uid, const std::string &token) = 0;
 };

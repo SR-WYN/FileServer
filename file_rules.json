@@ -1,0 +1,7 @@
+{
+  "AllowedExtensions": [".jpg", ".jpeg", ".png", ".gif", ".webp"],
+  "MaxFileSize": {
+    "avatar": 2097152,
+    "image": 10485760
+  }
+}

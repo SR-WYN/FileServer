@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package message;
+
+message ValidateTokenReq {
+  int32 uid = 1;
+  string token = 2;
+}
+
+message ValidateTokenRsp {
+  int32 error = 1;
+  int32 uid = 2;
+}
+
+service StatusService {
+  rpc ValidateToken(ValidateTokenReq) returns (ValidateTokenRsp);
+}

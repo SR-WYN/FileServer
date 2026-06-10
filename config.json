@@ -11,6 +11,9 @@
     "Host": "127.0.0.1",
     "Port": "50052"
   },
+  "FileStorage": {
+    "RootDir": "/home/asus/NETLEARN/FileServer/data"
+  },
   "MySql": {
     "Host": "127.0.0.1",
     "Port": "3307",
