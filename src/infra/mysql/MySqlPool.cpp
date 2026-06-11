@@ -1,5 +1,6 @@
 // MySqlPool.cpp - MySQL 连接池实现：初始化连接、心跳检查、断线重连补偿
 #include "MySqlPool.h"
+#include "Log.h"
 #include "utils.h"
 #include <cppconn/exception.h>
 #include <mutex>
@@ -35,11 +36,15 @@ MySqlPool::MySqlPool(const std::string& url, const std::string& user, const std:
                 std::chrono::duration_cast<std::chrono::seconds>(currentTime).count();
             _pool.push(std::make_unique<SqlConnection>(con, timestamp));
         }
+        Log::info(LogModule::Mysql, "MySqlPool initialized: {} connections to {}/{}",
+                  _pool_size, _url, _schema);
+
         _check_thread = std::thread(
             [this]()
             {
                 while (!_b_stop)
                 {
+                    Log::debug(LogModule::Mysql, "MySqlPool checkConnection starting");
                     checkConnection();
                     std::this_thread::sleep_for(std::chrono::seconds(60));
                 }
@@ -47,6 +52,7 @@ MySqlPool::MySqlPool(const std::string& url, const std::string& user, const std:
     }
     catch (sql::SQLException& e)
     {
+        Log::error(LogModule::Mysql, "MySqlPool constructor failed: {}", e.what());
     }
 }
 
@@ -96,12 +102,16 @@ void MySqlPool::checkConnection()
             catch (sql::SQLException& e)
             {
                 healthy = false; // 标记为坏连接，DEFER 此时不会将其还回池子
+                Log::warn(LogModule::Mysql, "checkConnection: bad connection, {}", e.what());
                 _fail_count++;
             }
         }
     }
 
     // 重连补偿：确保把缺额补齐
+    if (_fail_count > 0)
+        Log::info(LogModule::Mysql, "checkConnection: {} failed connection(s), reconnecting",
+                  _fail_count);
     while (_fail_count > 0)
     {
         if (reconnect(timestamp))
@@ -129,10 +139,12 @@ bool MySqlPool::reconnect(long long timestamp)
             _pool.push(std::move(newCon));
         }
 
+        Log::info(LogModule::Mysql, "reconnect: succeeded");
         return true;
     }
     catch (sql::SQLException& e)
     {
+        Log::error(LogModule::Mysql, "reconnect: failed, {}", e.what());
         return false;
     }
 }

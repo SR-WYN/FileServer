@@ -2,13 +2,17 @@
 #include "StatusServiceClientAdapter.h"
 #include "Log.h"
 #include "StatusGrpcClient.h"
+#include "error_codes.h"
 
 TokenValidateResult StatusServiceClientAdapter::validateToken(int uid, const std::string &token)
 {
-    Log::debug(LogModule::Grpc, "StatusServiceClientAdapter::validateToken uid={}", uid);
     TokenValidateResult result;
     int error = StatusGrpcClient::getInstance().validateToken(uid, token);
     result.error = error;
     result.uid = uid;
+    if (error == ErrorCodes::SUCCESS)
+        Log::info(LogModule::Grpc, "validateToken: uid={} success", uid);
+    else
+        Log::warn(LogModule::Grpc, "validateToken: uid={} failed, error={}", uid, error);
     return result;
 }

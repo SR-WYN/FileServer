@@ -3,6 +3,7 @@
 #pragma once
 
 #include "MySqlPool.h"
+#include "Log.h"
 #include "utils.h"
 #include <cppconn/exception.h>
 #include <cppconn/prepared_statement.h>
@@ -23,6 +24,7 @@ public:
         auto con = pool.getConnection();
         if (!con || !con->_con)
         {
+            Log::error(LogModule::Mysql, "DbSession::withConn: failed to get connection");
             return false;
         }
         utils::Defer defer([&]() { pool.returnConnection(std::move(con)); });
@@ -32,6 +34,7 @@ public:
         }
         catch (sql::SQLException &e)
         {
+            Log::error(LogModule::Mysql, "DbSession::withConn: SQL exception: {}", e.what());
             return false;
         }
     }
@@ -48,6 +51,8 @@ public:
             rows = stmt->executeUpdate();
             return rows >= 0;
         });
+        Log::debug(LogModule::Mysql, "DbSession::exec: SQL affected {} rows, sql={}",
+                   rows, sql);
         return rows;
     }
 

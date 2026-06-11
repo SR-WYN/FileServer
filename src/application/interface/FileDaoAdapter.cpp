@@ -15,9 +15,14 @@ FileDaoAdapter::FileDaoAdapter()
 
 bool FileDaoAdapter::updateAvatar(int uid, const std::string &iconUrl)
 {
-    return DbSession::exec(*_pool, "UPDATE user SET icon = ? WHERE uid = ?",
-                           [&](sql::PreparedStatement &stmt) {
-                               stmt.setString(1, iconUrl);
-                               stmt.setInt(2, uid);
-                           }) > 0;
+    bool ok = DbSession::exec(*_pool, "UPDATE user SET icon = ? WHERE uid = ?",
+                              [&](sql::PreparedStatement &stmt) {
+                                  stmt.setString(1, iconUrl);
+                                  stmt.setInt(2, uid);
+                              }) > 0;
+    if (ok)
+        Log::info(LogModule::Mysql, "updateAvatar: uid={} icon={}", uid, iconUrl);
+    else
+        Log::error(LogModule::Mysql, "updateAvatar: failed uid={} icon={}", uid, iconUrl);
+    return ok;
 }

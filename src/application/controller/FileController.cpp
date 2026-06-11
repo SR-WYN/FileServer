@@ -167,12 +167,14 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     // 3. 校验 — 委托给接口
     if (!_validator->isAllowedExtension(parsed.filename))
     {
+        Log::warn(LogModule::Http, "handleUploadImage: invalid extension {}", parsed.filename);
         makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
         return;
     }
 
     if (!_validator->isFileSizeValid(parsed.size, false))
     {
+        Log::warn(LogModule::Http, "handleUploadImage: file too large {} bytes", parsed.size);
         makeErrorResponse(conn, ErrorCodes::FILE_TOO_LARGE);
         return;
     }
