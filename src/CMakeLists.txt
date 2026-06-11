@@ -7,6 +7,7 @@ target_include_directories(fileserver_includes INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/config
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/mysql
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/grpc
+    ${CMAKE_CURRENT_SOURCE_DIR}/infra/heartbeat
     ${CMAKE_CURRENT_SOURCE_DIR}/application
     ${CMAKE_CURRENT_SOURCE_DIR}/application/interface
     ${CMAKE_CURRENT_SOURCE_DIR}/application/common
@@ -23,6 +24,7 @@ add_subdirectory(infra/mysql)
 add_subdirectory(net)
 add_subdirectory(storage)
 add_subdirectory(infra/grpc)
+add_subdirectory(infra/heartbeat)
 add_subdirectory(application)
 add_subdirectory(app)
 
@@ -44,6 +46,7 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     fs_net
     fs_storage
     fs_grpc
+    fs_heartbeat
     fs_application
     Boost::system
     Boost::thread
@@ -57,12 +60,12 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/config.json"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json"
+    "${CMAKE_SOURCE_DIR}/config.json"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/config.json"
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${CMAKE_SOURCE_DIR}/file_rules.json"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/file_rules.json"
+    "${CMAKE_SOURCE_DIR}/file_rules.json"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/file_rules.json"
     COMMAND ${CMAKE_COMMAND} -E make_directory
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/src/logdir"
+    "$<TARGET_FILE_DIR:${PROJECT_NAME}>/src/logdir"
     COMMENT "Copying config files and creating src/logdir..."
 )

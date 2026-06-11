@@ -2,6 +2,7 @@
 #include "AsioIOServicePool.h"
 #include "CServer.h"
 #include "ConfigMgr.h"
+#include "FileNodeHeartbeat.h"
 #include "Log.h"
 
 #include <atomic>
@@ -37,7 +38,17 @@ int main()
         g_server = std::make_shared<CServer>(*g_ioc, port);
         g_server->start();
 
-        // 3. 用信号处理器安全退出
+        // 3. 启动心跳注册
+        {
+            auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
+                           std::chrono::system_clock::now().time_since_epoch())
+                           .count();
+            std::string instance_id = std::to_string(now);
+            FileNodeHeartbeat::start("FileServer", instance_id, cfg["FileServer"]["Host"],
+                                     cfg["FileServer"]["Port"]);
+        }
+
+        // 4. 用信号处理器安全退出
         boost::asio::signal_set signals(*g_ioc, SIGINT, SIGTERM);
         signals.async_wait([&](boost::system::error_code ec, int sig) {
             if (!ec)
@@ -50,11 +61,14 @@ int main()
 
         LOGI(LogModule::App, "FileServer started on port {}, waiting for signal...", port);
 
-        // 4. 主循环
+        // 5. 主循环
         g_ioc->run();
         LOGI(LogModule::App, "FileServer stopping...");
 
-        // 5. 先停连接池线程，再销毁服务器资源
+        // 6. 停止心跳并注销
+        FileNodeHeartbeat::stop();
+
+        // 7. 停止连接池线程，再销毁服务器资源
         AsioIOServicePool::getInstance().stop();
         g_server.reset();
         g_ioc.reset();

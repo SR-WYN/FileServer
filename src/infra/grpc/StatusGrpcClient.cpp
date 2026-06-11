@@ -1,4 +1,4 @@
-// StatusGrpcClient.cpp - 向 StatusServer 验证 Token 的 gRPC 客户端实现
+// StatusGrpcClient.cpp - 向 StatusServer 验证 Token 和节点心跳的 gRPC 客户端实现
 #include "StatusGrpcClient.h"
 #include "ConfigMgr.h"
 #include "Log.h"
@@ -8,6 +8,12 @@
 
 using message::ValidateTokenReq;
 using message::ValidateTokenRsp;
+using message::RegisterChatNodeReq;
+using message::RegisterChatNodeRsp;
+using message::HeartbeatChatNodeReq;
+using message::HeartbeatChatNodeRsp;
+using message::UnregisterChatNodeReq;
+using message::UnregisterChatNodeRsp;
 
 StatusGrpcClient::StatusGrpcClient()
 {
@@ -53,4 +59,94 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
                    status.error_code(), status.error_message());
         return ErrorCodes::RPCFAILED;
     }
+}
+
+bool StatusGrpcClient::registerChatNode(const std::string &name,
+                                         const std::string &instance_id,
+                                         const std::string &host,
+                                         const std::string &port)
+{
+    Log::info(LogModule::Grpc, "registerChatNode: name={} instance={} {}:{}",
+              name, instance_id, host, port);
+
+    ClientContext context;
+    RegisterChatNodeRsp reply;
+    RegisterChatNodeReq request;
+    request.set_name(name);
+    request.set_instance_id(instance_id);
+    request.set_client_host(host);
+    request.set_client_port(port);
+    request.set_rpc_host("");
+    request.set_rpc_port("");
+
+    auto stub = _pool->getConnection();
+    if (!stub)
+        return false;
+
+    Status status = stub->RegisterChatNode(&context, request, &reply);
+    _pool->returnConnection(std::move(stub));
+
+    if (!status.ok())
+    {
+        Log::error(LogModule::Grpc, "registerChatNode RPC failed: {}", status.error_message());
+        return false;
+    }
+
+    bool ok = (reply.error() == ErrorCodes::SUCCESS);
+    Log::info(LogModule::Grpc, "registerChatNode: {} error={}", ok ? "success" : "failed", reply.error());
+    return ok;
+}
+
+bool StatusGrpcClient::heartbeatChatNode(const std::string &name,
+                                          const std::string &instance_id)
+{
+    ClientContext context;
+    HeartbeatChatNodeRsp reply;
+    HeartbeatChatNodeReq request;
+    request.set_name(name);
+    request.set_instance_id(instance_id);
+
+    auto stub = _pool->getConnection();
+    if (!stub)
+        return false;
+
+    Status status = stub->HeartbeatChatNode(&context, request, &reply);
+    _pool->returnConnection(std::move(stub));
+
+    if (!status.ok())
+    {
+        Log::warn(LogModule::Grpc, "heartbeatChatNode RPC failed: {}", status.error_message());
+        return false;
+    }
+    Log::debug(LogModule::Grpc, "heartbeatChatNode success, name={}", name);
+    return reply.error() == ErrorCodes::SUCCESS;
+}
+
+bool StatusGrpcClient::unregisterChatNode(const std::string &name,
+                                           const std::string &instance_id)
+{
+    Log::info(LogModule::Grpc, "unregisterChatNode: name={} instance={}", name, instance_id);
+
+    ClientContext context;
+    UnregisterChatNodeRsp reply;
+    UnregisterChatNodeReq request;
+    request.set_name(name);
+    request.set_instance_id(instance_id);
+
+    auto stub = _pool->getConnection();
+    if (!stub)
+        return false;
+
+    Status status = stub->UnregisterChatNode(&context, request, &reply);
+    _pool->returnConnection(std::move(stub));
+
+    if (!status.ok())
+    {
+        Log::warn(LogModule::Grpc, "unregisterChatNode RPC failed: {}", status.error_message());
+        return false;
+    }
+
+    bool ok = (reply.error() == ErrorCodes::SUCCESS);
+    Log::info(LogModule::Grpc, "unregisterChatNode: {}", ok ? "success" : "failed");
+    return ok;
 }

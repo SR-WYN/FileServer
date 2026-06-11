@@ -2,16 +2,49 @@ syntax = "proto3";
 
 package message;
 
+// ---- Token 验证 ----
 message ValidateTokenReq {
   int32 uid = 1;
   string token = 2;
 }
-
 message ValidateTokenRsp {
   int32 error = 1;
   int32 uid = 2;
 }
 
+// ---- 节点注册与心跳 ----
+message RegisterChatNodeReq {
+  string name = 1;
+  string client_host = 2;
+  string client_port = 3;
+  string rpc_host = 4;
+  string rpc_port = 5;
+  string instance_id = 6;
+}
+message RegisterChatNodeRsp {
+  int32 error = 1;
+  string name = 2;
+}
+
+message HeartbeatChatNodeReq {
+  string name = 1;
+  string instance_id = 2;
+}
+message HeartbeatChatNodeRsp {
+  int32 error = 1;
+}
+
+message UnregisterChatNodeReq {
+  string name = 1;
+  string instance_id = 2;
+}
+message UnregisterChatNodeRsp {
+  int32 error = 1;
+}
+
 service StatusService {
   rpc ValidateToken(ValidateTokenReq) returns (ValidateTokenRsp);
+  rpc RegisterChatNode(RegisterChatNodeReq) returns (RegisterChatNodeRsp);
+  rpc HeartbeatChatNode(HeartbeatChatNodeReq) returns (HeartbeatChatNodeRsp);
+  rpc UnregisterChatNode(UnregisterChatNodeReq) returns (UnregisterChatNodeRsp);
 }
