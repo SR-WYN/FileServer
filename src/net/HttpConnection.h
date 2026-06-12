@@ -23,10 +23,10 @@ public:
     /// 开始异步读取 HTTP 请求
     void start();
 
-    tcp::socket& GetSocket();
-    http::response<http::dynamic_body>& GetResponse();
-    const http::request<http::dynamic_body>& GetRequest() const;
-    const std::unordered_map<std::string, std::string>& GetParams() const;
+    tcp::socket& getSocket();
+    http::response<http::dynamic_body>& getResponse();
+    const http::request<http::dynamic_body>& getRequest() const;
+    const std::unordered_map<std::string, std::string>& getParams() const;
 
 private:
     void checkDeadline();

@@ -2,6 +2,7 @@
 #include "FileValidatorImpl.h"
 #include "ConfigMgr.h"
 #include "Log.h"
+
 #include <sstream>
 
 FileValidatorImpl::FileValidatorImpl()

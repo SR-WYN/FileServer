@@ -147,22 +147,22 @@ void HttpConnection::checkDeadline()
     });
 }
 
-http::response<http::dynamic_body>& HttpConnection::GetResponse()
+http::response<http::dynamic_body>& HttpConnection::getResponse()
 {
     return _response;
 }
 
-const http::request<http::dynamic_body>& HttpConnection::GetRequest() const
+const http::request<http::dynamic_body>& HttpConnection::getRequest() const
 {
     return _request;
 }
 
-const std::unordered_map<std::string, std::string>& HttpConnection::GetParams() const
+const std::unordered_map<std::string, std::string>& HttpConnection::getParams() const
 {
     return _get_params;
 }
 
-tcp::socket& HttpConnection::GetSocket()
+tcp::socket& HttpConnection::getSocket()
 {
     return _socket;
 }

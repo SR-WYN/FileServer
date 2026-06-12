@@ -42,7 +42,7 @@ int StatusGrpcClient::validateToken(int uid, const std::string& token)
     if (!stub)
     {
         Log::error(LogModule::Grpc, "validateToken: failed to get connection from pool");
-        return ErrorCodes::RPCFAILED;
+        return ErrorCodes::RPC_FAILED;
     }
     Status status = stub->ValidateToken(&context, request, &reply);
     utils::Defer defer([&stub, this]() {
@@ -57,7 +57,7 @@ int StatusGrpcClient::validateToken(int uid, const std::string& token)
     {
         Log::error(LogModule::Grpc, "validateToken RPC failed: uid={}, error_code={}, msg={}", uid,
                    status.error_code(), status.error_message());
-        return ErrorCodes::RPCFAILED;
+        return ErrorCodes::RPC_FAILED;
     }
 }
 

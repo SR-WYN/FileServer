@@ -1,19 +1,20 @@
 // FileController.cpp - 文件上传/下载业务控制器实现
 // 所有非编排逻辑均通过接口委托实现
 #include "FileController.h"
-#include "HttpConnection.h"
 #include "FileDao.h"
 #include "FileStorage.h"
 #include "FileValidator.h"
+#include "HttpConnection.h"
+#include "Log.h"
 #include "MultipartParser.h"
 #include "StatusServiceClient.h"
-#include "Log.h"
 #include "error_codes.h"
 #include "utils.h"
 
 #include <boost/beast/core/ostream.hpp>
-#include <chrono>
 #include <json/value.h>
+
+#include <chrono>
 
 FileController::FileController(std::shared_ptr<FileStorage> storage,
                                std::shared_ptr<FileDao> fileDao,
@@ -27,9 +28,9 @@ FileController::FileController(std::shared_ptr<FileStorage> storage,
     Log::info(LogModule::App, "FileController initialized");
 }
 
-bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, int& outUid)
+bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, int &outUid)
 {
-    auto& request = conn->GetRequest();
+    auto &request = conn->getRequest();
     auto auth = request[http::field::authorization];
     if (auth.empty())
     {
@@ -71,7 +72,7 @@ bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, i
     return true;
 }
 
-std::string FileController::generateFileName(int uid, const std::string& originalName)
+std::string FileController::generateFileName(int uid, const std::string &originalName)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                    std::chrono::system_clock::now().time_since_epoch())
@@ -89,7 +90,7 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     int uid = 0;
     if (!authenticateRequest(conn, uid))
     {
-        makeErrorResponse(conn, ErrorCodes::TOKEN_INVALID);
+        utils::makeErrorResponse(conn, ErrorCodes::TOKEN_INVALID);
         return;
     }
 
@@ -97,7 +98,7 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     auto parsed = _parser->parse(conn);
     if (!parsed.valid)
     {
-        makeErrorResponse(conn, ErrorCodes::ERROR_JSON);
+        utils::makeErrorResponse(conn, ErrorCodes::ERROR_JSON);
         return;
     }
 
@@ -105,14 +106,14 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     if (!_validator->isAllowedExtension(parsed.filename))
     {
         Log::warn(LogModule::Http, "handleUploadAvatar: invalid extension {}", parsed.filename);
-        makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
         return;
     }
 
     if (!_validator->isFileSizeValid(parsed.size, true))
     {
         Log::warn(LogModule::Http, "handleUploadAvatar: file too large {} bytes", parsed.size);
-        makeErrorResponse(conn, ErrorCodes::FILE_TOO_LARGE);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_TOO_LARGE);
         return;
     }
 
@@ -122,7 +123,7 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     if (relative_path.empty())
     {
         Log::error(LogModule::Http, "handleUploadAvatar: saveFile failed");
-        makeErrorResponse(conn, ErrorCodes::FILE_SAVE_FAILED);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_SAVE_FAILED);
         return;
     }
 
@@ -131,7 +132,7 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     {
         Log::error(LogModule::Http, "handleUploadAvatar: DB update failed for uid={}", uid);
         _storage->deleteFile(relative_path);
-        makeErrorResponse(conn, ErrorCodes::DB_UPDATE_FAILED);
+        utils::makeErrorResponse(conn, ErrorCodes::DB_UPDATE_FAILED);
         return;
     }
 
@@ -139,7 +140,7 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     Json::Value resp;
     resp["error"] = ErrorCodes::SUCCESS;
     resp["url"] = "/files/" + relative_path;
-    makeJsonResponse(conn, resp);
+    utils::makeJsonResponse(conn, resp);
     Log::info(LogModule::Http, "handleUploadAvatar: success uid={}, url={}", uid,
               resp["url"].asString());
 }
@@ -152,7 +153,7 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     int uid = 0;
     if (!authenticateRequest(conn, uid))
     {
-        makeErrorResponse(conn, ErrorCodes::TOKEN_INVALID);
+        utils::makeErrorResponse(conn, ErrorCodes::TOKEN_INVALID);
         return;
     }
 
@@ -160,7 +161,7 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     auto parsed = _parser->parse(conn);
     if (!parsed.valid)
     {
-        makeErrorResponse(conn, ErrorCodes::ERROR_JSON);
+        utils::makeErrorResponse(conn, ErrorCodes::ERROR_JSON);
         return;
     }
 
@@ -168,14 +169,14 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     if (!_validator->isAllowedExtension(parsed.filename))
     {
         Log::warn(LogModule::Http, "handleUploadImage: invalid extension {}", parsed.filename);
-        makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
         return;
     }
 
     if (!_validator->isFileSizeValid(parsed.size, false))
     {
         Log::warn(LogModule::Http, "handleUploadImage: file too large {} bytes", parsed.size);
-        makeErrorResponse(conn, ErrorCodes::FILE_TOO_LARGE);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_TOO_LARGE);
         return;
     }
 
@@ -184,7 +185,7 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     std::string relative_path = _storage->saveFile("images", saved_name, parsed.data, parsed.size);
     if (relative_path.empty())
     {
-        makeErrorResponse(conn, ErrorCodes::FILE_SAVE_FAILED);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_SAVE_FAILED);
         return;
     }
 
@@ -192,14 +193,14 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
     Json::Value resp;
     resp["error"] = ErrorCodes::SUCCESS;
     resp["url"] = "/files/" + relative_path;
-    makeJsonResponse(conn, resp);
+    utils::makeJsonResponse(conn, resp);
     Log::info(LogModule::Http, "handleUploadImage: success uid={}, url={}", uid,
               resp["url"].asString());
 }
 
 void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
 {
-    auto& request = conn->GetRequest();
+    auto &request = conn->getRequest();
     std::string target(request.target());
     Log::info(LogModule::Http, "handleDownloadFile: {}", target);
 
@@ -210,7 +211,7 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
     const std::string prefix = "/files/";
     if (target.size() <= prefix.size() || target.substr(0, prefix.size()) != prefix)
     {
-        makeErrorResponse(conn, ErrorCodes::FILE_NOT_FOUND);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_NOT_FOUND);
         return;
     }
 
@@ -219,11 +220,11 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
     std::vector<char> file_data;
     if (!_storage->readFile(relative_path, file_data))
     {
-        makeErrorResponse(conn, ErrorCodes::FILE_NOT_FOUND);
+        utils::makeErrorResponse(conn, ErrorCodes::FILE_NOT_FOUND);
         return;
     }
 
-    auto& response = conn->GetResponse();
+    auto &response = conn->getResponse();
     response.set(http::field::content_type, "application/octet-stream");
     beast::ostream(response.body()).write(file_data.data(), file_data.size());
     Log::info(LogModule::Http, "handleDownloadFile: served {} ({} bytes)", relative_path,
@@ -232,7 +233,7 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
 
 void FileController::handlePing(std::shared_ptr<HttpConnection> conn)
 {
-    auto& response = conn->GetResponse();
+    auto &response = conn->getResponse();
     response.set(http::field::content_type, "text/plain");
     beast::ostream(response.body()) << "pong";
     Log::debug(LogModule::Http, "handlePing: pong");

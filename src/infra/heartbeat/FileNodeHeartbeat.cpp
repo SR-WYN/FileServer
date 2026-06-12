@@ -1,6 +1,9 @@
+// FileNodeHeartbeat.cpp - 向 StatusServer 注册和心跳的独立线程
 #include "FileNodeHeartbeat.h"
+
 #include "Log.h"
 #include "StatusGrpcClient.h"
+
 #include <chrono>
 
 std::atomic<bool> FileNodeHeartbeat::_running{false};

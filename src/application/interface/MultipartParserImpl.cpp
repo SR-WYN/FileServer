@@ -7,7 +7,7 @@
 MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> conn)
 {
     MultipartParseResult result;
-    auto& request = conn->GetRequest();
+    auto& request = conn->getRequest();
 
     std::string body = boost::beast::buffers_to_string(request.body().data());
     std::string content_type(request[http::field::content_type]);

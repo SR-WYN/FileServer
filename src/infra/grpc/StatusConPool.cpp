@@ -2,7 +2,9 @@
 #include "StatusConPool.h"
 #include "Log.h"
 #include "message.grpc.pb.h"
+
 #include <grpcpp/security/credentials.h>
+
 #include <memory>
 
 StatusConPool::StatusConPool(size_t poolSize, std::string host, std::string port)

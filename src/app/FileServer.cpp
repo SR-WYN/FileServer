@@ -5,8 +5,9 @@
 #include "FileNodeHeartbeat.h"
 #include "Log.h"
 
-#include <atomic>
 #include <boost/asio.hpp>
+
+#include <atomic>
 #include <chrono>
 #include <csignal>
 #include <iostream>

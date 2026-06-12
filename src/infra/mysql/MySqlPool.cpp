@@ -2,9 +2,11 @@
 #include "MySqlPool.h"
 #include "Log.h"
 #include "utils.h"
+
 #include <cppconn/exception.h>
-#include <mutex>
 #include <mysql_driver.h>
+
+#include <mutex>
 
 SqlConnection::SqlConnection(sql::Connection* con, int64_t lasttime)
     : _con(con),
