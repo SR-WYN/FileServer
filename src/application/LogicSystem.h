@@ -11,7 +11,7 @@
 class HttpConnection;
 class FileController;
 
-typedef std::function<void(std::shared_ptr<HttpConnection>)> HttpHandler;
+using HttpHandler = std::function<void(std::shared_ptr<HttpConnection>)>;
 
 class LogicSystem : public Singleton<LogicSystem>
 {

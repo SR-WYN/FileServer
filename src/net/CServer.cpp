@@ -5,7 +5,7 @@
 #include "Log.h"
 #include <iostream>
 
-CServer::CServer(boost::asio::io_context &ioc, unsigned short &port)
+CServer::CServer(boost::asio::io_context& ioc, unsigned short& port)
     : _ioc(ioc), _acceptor(ioc, tcp::endpoint(tcp::v4(), port))
 {
     Log::info(LogModule::App, "CServer constructed, listening on port {}", port);
@@ -14,7 +14,7 @@ CServer::CServer(boost::asio::io_context &ioc, unsigned short &port)
 void CServer::start()
 {
     auto self = shared_from_this();
-    auto &io_context = AsioIOServicePool::getInstance().getIoService();
+    auto& io_context = AsioIOServicePool::getInstance().getIoService();
     std::shared_ptr<HttpConnection> new_con = std::make_shared<HttpConnection>(io_context);
     _acceptor.async_accept(new_con->GetSocket(), [self, new_con](beast::error_code ec) {
         try
@@ -29,7 +29,7 @@ void CServer::start()
             new_con->start();
             self->start();
         }
-        catch (const std::exception &e)
+        catch (const std::exception& e)
         {
             Log::error(LogModule::App, "CServer exception: {}", e.what());
         }

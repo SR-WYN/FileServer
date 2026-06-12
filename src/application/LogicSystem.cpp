@@ -5,18 +5,18 @@
 #include "Log.h"
 
 // 接口定义
-#include "IFileDao.h"
-#include "IFileStorage.h"
-#include "IFileValidator.h"
-#include "IMultipartParser.h"
-#include "IStatusServiceClient.h"
+#include "FileDao.h"
+#include "FileStorage.h"
+#include "FileValidator.h"
+#include "MultipartParser.h"
+#include "StatusServiceClient.h"
 
-// 适配器实现
-#include "FileDaoAdapter.h"
-#include "FileValidatorAdapter.h"
-#include "LocalFileStorage.h"
-#include "MultipartParserAdapter.h"
-#include "StatusServiceClientAdapter.h"
+// 实现类
+#include "FileDaoImpl.h"
+#include "FileValidatorImpl.h"
+#include "FileStorageImpl.h"
+#include "MultipartParserImpl.h"
+#include "StatusServiceClientImpl.h"
 
 #include "ConfigMgr.h"
 #include "FileController.h"
@@ -50,11 +50,11 @@ LogicSystem::LogicSystem()
     auto rootDir = ConfigMgr::getInstance()["FileStorage"]["RootDir"];
 
     // 2. 创建适配器
-    auto storage = std::make_shared<LocalFileStorage>(rootDir);
-    auto fileDao = std::make_shared<FileDaoAdapter>();
-    auto statusClient = std::make_shared<StatusServiceClientAdapter>();
-    auto multipartParser = std::make_shared<MultipartParserAdapter>();
-    auto fileValidator = std::make_shared<FileValidatorAdapter>();
+    auto storage = std::make_shared<FileStorageImpl>(rootDir);
+    auto fileDao = std::make_shared<FileDaoImpl>();
+    auto statusClient = std::make_shared<StatusServiceClientImpl>();
+    auto multipartParser = std::make_shared<MultipartParserImpl>();
+    auto fileValidator = std::make_shared<FileValidatorImpl>();
 
     // 3. 创建 Controller 并注入依赖
     _fileController = std::make_shared<FileController>(storage, fileDao, statusClient,

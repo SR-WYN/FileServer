@@ -1,12 +1,12 @@
-// MultipartParserAdapter.h - multipart/form-data 解析适配器实现
+// MultipartParserImpl.h - multipart/form-data 解析适配器实现
 // 使用字符串查找方式解析 multipart 请求体，提取文件名和二进制数据
 #pragma once
 
-#include "IMultipartParser.h"
+#include "MultipartParser.h"
 
 /// multipart/form-data 解析适配器
 /// 适用于 Boost.Beast HTTP 服务收到的文件上传请求
-class MultipartParserAdapter : public IMultipartParser
+class MultipartParserImpl : public MultipartParser
 {
 public:
     /// 解析 multipart 请求体，提取文件数据

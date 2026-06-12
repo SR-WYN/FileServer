@@ -18,15 +18,15 @@ using tcp = boost::asio::ip::tcp;
 class HttpConnection : public std::enable_shared_from_this<HttpConnection>
 {
 public:
-    explicit HttpConnection(boost::asio::io_context &ioc);
+    explicit HttpConnection(boost::asio::io_context& ioc);
 
     /// 开始异步读取 HTTP 请求
     void start();
 
-    tcp::socket &GetSocket();
-    http::response<http::dynamic_body> &GetResponse();
-    http::request<http::dynamic_body> &GetRequest();
-    std::unordered_map<std::string, std::string> &GetParams();
+    tcp::socket& GetSocket();
+    http::response<http::dynamic_body>& GetResponse();
+    const http::request<http::dynamic_body>& GetRequest() const;
+    const std::unordered_map<std::string, std::string>& GetParams() const;
 
 private:
     void checkDeadline();

@@ -17,7 +17,7 @@ using message::UnregisterChatNodeRsp;
 
 StatusGrpcClient::StatusGrpcClient()
 {
-    auto &cfg = ConfigMgr::getInstance();
+    auto& cfg = ConfigMgr::getInstance();
     std::string host = cfg["StatusServer"]["Host"];
     std::string port = cfg["StatusServer"]["Port"];
     Log::info(LogModule::Grpc, "StatusGrpcClient connecting to StatusServer at {}:{}", host, port);
@@ -29,7 +29,7 @@ StatusGrpcClient::~StatusGrpcClient()
     Log::info(LogModule::Grpc, "StatusGrpcClient destroyed");
 }
 
-int StatusGrpcClient::validateToken(int uid, const std::string &token)
+int StatusGrpcClient::validateToken(int uid, const std::string& token)
 {
     Log::info(LogModule::Grpc, "StatusGrpcClient::validateToken uid={}", uid);
     ClientContext context;
@@ -61,10 +61,10 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
     }
 }
 
-bool StatusGrpcClient::registerChatNode(const std::string &name,
-                                         const std::string &instance_id,
-                                         const std::string &host,
-                                         const std::string &port)
+bool StatusGrpcClient::registerChatNode(const std::string& name,
+                                         const std::string& instance_id,
+                                         const std::string& host,
+                                         const std::string& port)
 {
     Log::info(LogModule::Grpc, "registerChatNode: name={} instance={} {}:{}",
               name, instance_id, host, port);
@@ -97,8 +97,8 @@ bool StatusGrpcClient::registerChatNode(const std::string &name,
     return ok;
 }
 
-bool StatusGrpcClient::heartbeatChatNode(const std::string &name,
-                                          const std::string &instance_id)
+bool StatusGrpcClient::heartbeatChatNode(const std::string& name,
+                                          const std::string& instance_id)
 {
     ClientContext context;
     HeartbeatChatNodeRsp reply;
@@ -122,8 +122,8 @@ bool StatusGrpcClient::heartbeatChatNode(const std::string &name,
     return reply.error() == ErrorCodes::SUCCESS;
 }
 
-bool StatusGrpcClient::unregisterChatNode(const std::string &name,
-                                           const std::string &instance_id)
+bool StatusGrpcClient::unregisterChatNode(const std::string& name,
+                                           const std::string& instance_id)
 {
     Log::info(LogModule::Grpc, "unregisterChatNode: name={} instance={}", name, instance_id);
 

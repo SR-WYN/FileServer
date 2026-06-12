@@ -1,17 +1,17 @@
-// IFileValidator.h - 文件上传校验规则接口
+// FileValidator.h - 文件上传校验规则接口
 // 抽象文件扩展名白名单、大小限制等校验，与配置加载方式解耦
 #pragma once
 
 #include <string>
 
 /// 文件上传校验器接口
-class IFileValidator
+class FileValidator
 {
 public:
-    virtual ~IFileValidator() = default;
+    virtual ~FileValidator() = default;
 
     /// 检查文件扩展名是否在白名单内
-    virtual bool isAllowedExtension(const std::string &filename) = 0;
+    virtual bool isAllowedExtension(const std::string& filename) = 0;
 
     /// 检查文件大小是否在允许范围内
     /// @param size     文件字节数

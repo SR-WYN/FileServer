@@ -2,11 +2,11 @@
 // 所有非编排逻辑均通过接口委托实现
 #include "FileController.h"
 #include "HttpConnection.h"
-#include "IFileDao.h"
-#include "IFileStorage.h"
-#include "IFileValidator.h"
-#include "IMultipartParser.h"
-#include "IStatusServiceClient.h"
+#include "FileDao.h"
+#include "FileStorage.h"
+#include "FileValidator.h"
+#include "MultipartParser.h"
+#include "StatusServiceClient.h"
 #include "Log.h"
 #include "error_codes.h"
 #include "utils.h"
@@ -15,11 +15,11 @@
 #include <chrono>
 #include <json/value.h>
 
-FileController::FileController(std::shared_ptr<IFileStorage> storage,
-                               std::shared_ptr<IFileDao> fileDao,
-                               std::shared_ptr<IStatusServiceClient> statusClient,
-                               std::shared_ptr<IMultipartParser> parser,
-                               std::shared_ptr<IFileValidator> validator)
+FileController::FileController(std::shared_ptr<FileStorage> storage,
+                               std::shared_ptr<FileDao> fileDao,
+                               std::shared_ptr<StatusServiceClient> statusClient,
+                               std::shared_ptr<MultipartParser> parser,
+                               std::shared_ptr<FileValidator> validator)
     : _storage(std::move(storage)), _fileDao(std::move(fileDao)),
       _statusClient(std::move(statusClient)), _parser(std::move(parser)),
       _validator(std::move(validator))
@@ -27,9 +27,9 @@ FileController::FileController(std::shared_ptr<IFileStorage> storage,
     Log::info(LogModule::App, "FileController initialized");
 }
 
-bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, int &outUid)
+bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, int& outUid)
 {
-    auto &request = conn->GetRequest();
+    auto& request = conn->GetRequest();
     auto auth = request[http::field::authorization];
     if (auth.empty())
     {
@@ -71,7 +71,7 @@ bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, i
     return true;
 }
 
-std::string FileController::generateFileName(int uid, const std::string &originalName)
+std::string FileController::generateFileName(int uid, const std::string& originalName)
 {
     auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                    std::chrono::system_clock::now().time_since_epoch())
@@ -199,7 +199,7 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
 
 void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
 {
-    auto &request = conn->GetRequest();
+    auto& request = conn->GetRequest();
     std::string target(request.target());
     Log::info(LogModule::Http, "handleDownloadFile: {}", target);
 
@@ -223,7 +223,7 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
         return;
     }
 
-    auto &response = conn->GetResponse();
+    auto& response = conn->GetResponse();
     response.set(http::field::content_type, "application/octet-stream");
     beast::ostream(response.body()).write(file_data.data(), file_data.size());
     Log::info(LogModule::Http, "handleDownloadFile: served {} ({} bytes)", relative_path,
@@ -232,7 +232,7 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
 
 void FileController::handlePing(std::shared_ptr<HttpConnection> conn)
 {
-    auto &response = conn->GetResponse();
+    auto& response = conn->GetResponse();
     response.set(http::field::content_type, "text/plain");
     beast::ostream(response.body()) << "pong";
     Log::debug(LogModule::Http, "handlePing: pong");

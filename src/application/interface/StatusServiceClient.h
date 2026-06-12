@@ -1,4 +1,4 @@
-// IStatusServiceClient.h - StatusServer gRPC 通信接口
+// StatusServiceClient.h - StatusServer gRPC 通信接口
 // 抽象与 StatusServer 的 RPC 调用，用于 Token 验证
 #pragma once
 
@@ -12,14 +12,14 @@ struct TokenValidateResult
 };
 
 /// StatusServer gRPC 客户端接口
-class IStatusServiceClient
+class StatusServiceClient
 {
 public:
-    virtual ~IStatusServiceClient() = default;
+    virtual ~StatusServiceClient() = default;
 
     /// 验证用户 Token 是否有效
     /// @param uid   用户 ID
     /// @param token 登录时颁发的 Token
     /// @return TokenValidateResult（error == 0 表示有效）
-    virtual TokenValidateResult validateToken(int uid, const std::string &token) = 0;
+    virtual TokenValidateResult validateToken(int uid, const std::string& token) = 0;
 };

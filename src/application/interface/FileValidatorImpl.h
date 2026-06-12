@@ -1,17 +1,17 @@
-// FileValidatorAdapter.h - 文件上传校验规则适配器
+// FileValidatorImpl.h - 文件上传校验规则适配器
 // 从 ConfigMgr["FileRules"] 加载白名单和大小限制
 #pragma once
 
-#include "IFileValidator.h"
+#include "FileValidator.h"
 #include <set>
 #include <string>
 
-class FileValidatorAdapter : public IFileValidator
+class FileValidatorImpl : public FileValidator
 {
 public:
-    FileValidatorAdapter();
+    FileValidatorImpl();
 
-    bool isAllowedExtension(const std::string &filename) override;
+    bool isAllowedExtension(const std::string& filename) override;
     bool isFileSizeValid(size_t size, bool isAvatar) override;
 
 private:

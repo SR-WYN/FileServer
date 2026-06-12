@@ -4,7 +4,7 @@
 #include "LogicSystem.h"
 #include "utils.h"
 
-HttpConnection::HttpConnection(boost::asio::io_context &ioc) : _socket(ioc)
+HttpConnection::HttpConnection(boost::asio::io_context& ioc) : _socket(ioc)
 {
 }
 
@@ -27,7 +27,7 @@ void HttpConnection::start()
                              self->handleReq();
                              self->checkDeadline();
                          }
-                         catch (std::exception &e)
+                         catch (std::exception& e)
                          {
                              Log::error(LogModule::Http, "http read handler exception: {}",
                                         e.what());
@@ -147,22 +147,22 @@ void HttpConnection::checkDeadline()
     });
 }
 
-http::response<http::dynamic_body> &HttpConnection::GetResponse()
+http::response<http::dynamic_body>& HttpConnection::GetResponse()
 {
     return _response;
 }
 
-http::request<http::dynamic_body> &HttpConnection::GetRequest()
+const http::request<http::dynamic_body>& HttpConnection::GetRequest() const
 {
     return _request;
 }
 
-std::unordered_map<std::string, std::string> &HttpConnection::GetParams()
+const std::unordered_map<std::string, std::string>& HttpConnection::GetParams() const
 {
     return _get_params;
 }
 
-tcp::socket &HttpConnection::GetSocket()
+tcp::socket& HttpConnection::GetSocket()
 {
     return _socket;
 }

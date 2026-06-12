@@ -1,13 +1,13 @@
-// MultipartParserAdapter.cpp - multipart/form-data 解析适配器实现
-#include "MultipartParserAdapter.h"
+// MultipartParserImpl.cpp - multipart/form-data 解析适配器实现
+#include "MultipartParserImpl.h"
 #include "HttpConnection.h"
 #include "Log.h"
 #include <boost/beast/core/buffers_to_string.hpp>
 
-MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnection> conn)
+MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> conn)
 {
     MultipartParseResult result;
-    auto &request = conn->GetRequest();
+    auto& request = conn->GetRequest();
 
     std::string body = boost::beast::buffers_to_string(request.body().data());
     std::string content_type(request[http::field::content_type]);
@@ -16,7 +16,7 @@ MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnectio
     auto pos = content_type.find("boundary=");
     if (pos == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParser: no boundary in Content-Type");
+        Log::warn(LogModule::Http, "MultipartParserImpl: no boundary in Content-Type");
         return result;
     }
     std::string boundary = content_type.substr(pos + 9);
@@ -27,7 +27,7 @@ MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnectio
     auto body_start = body.find(delimiter);
     if (body_start == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParser: delimiter not found");
+        Log::warn(LogModule::Http, "MultipartParserImpl: delimiter not found");
         return result;
     }
 
@@ -35,7 +35,7 @@ MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnectio
     auto filename_pos = body.find("filename=\"", body_start);
     if (filename_pos == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParser: filename not found");
+        Log::warn(LogModule::Http, "MultipartParserImpl: filename not found");
         return result;
     }
     filename_pos += 10;
@@ -46,7 +46,7 @@ MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnectio
     auto data_start = body.find("\r\n\r\n", filename_end);
     if (data_start == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParser: data start not found");
+        Log::warn(LogModule::Http, "MultipartParserImpl: data start not found");
         return result;
     }
     data_start += 4;
@@ -62,7 +62,7 @@ MultipartParseResult MultipartParserAdapter::parse(std::shared_ptr<HttpConnectio
     result.size = data_end - data_start;
     result.valid = true;
 
-    Log::debug(LogModule::Http, "MultipartParser: parsed file '{}' ({} bytes)",
+    Log::debug(LogModule::Http, "MultipartParserImpl: parsed file '{}' ({} bytes)",
                result.filename, result.size);
     return result;
 }

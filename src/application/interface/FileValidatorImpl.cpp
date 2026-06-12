@@ -1,10 +1,10 @@
-// FileValidatorAdapter.cpp - 文件上传校验规则适配器实现
-#include "FileValidatorAdapter.h"
+// FileValidatorImpl.cpp - 文件上传校验规则适配器实现
+#include "FileValidatorImpl.h"
 #include "ConfigMgr.h"
 #include "Log.h"
 #include <sstream>
 
-FileValidatorAdapter::FileValidatorAdapter()
+FileValidatorImpl::FileValidatorImpl()
 {
     auto rules = ConfigMgr::getInstance()["FileRules"];
     auto ext_str = rules["AllowedExtensions"];
@@ -29,22 +29,22 @@ FileValidatorAdapter::FileValidatorAdapter()
     if (!max_image.empty()) _maxImageSize = std::stoll(max_image);
 
     Log::info(LogModule::App,
-              "FileValidatorAdapter: {} allowed extensions, "
+              "FileValidatorImpl: {} allowed extensions, "
               "max avatar={}, max image={}",
               _allowedExtensions.size(), _maxAvatarSize, _maxImageSize);
 }
 
-bool FileValidatorAdapter::isAllowedExtension(const std::string &filename)
+bool FileValidatorImpl::isAllowedExtension(const std::string& filename)
 {
     auto pos = filename.rfind('.');
     if (pos == std::string::npos) return false;
     std::string ext = filename.substr(pos);
-    for (auto &c : ext)
+    for (auto& c : ext)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return _allowedExtensions.find(ext) != _allowedExtensions.end();
 }
 
-bool FileValidatorAdapter::isFileSizeValid(size_t size, bool isAvatar)
+bool FileValidatorImpl::isFileSizeValid(size_t size, bool isAvatar)
 {
     return isAvatar ? (size <= static_cast<size_t>(_maxAvatarSize))
                     : (size <= static_cast<size_t>(_maxImageSize));

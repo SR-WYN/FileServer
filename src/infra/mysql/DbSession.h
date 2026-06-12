@@ -16,10 +16,10 @@
 class DbSession
 {
 public:
-    using BindFn = std::function<void(sql::PreparedStatement &)>;
+    using BindFn = std::function<void(sql::PreparedStatement&)>;
 
     template <typename Fn>
-    static bool withConn(MySqlPool &pool, Fn &&fn)
+    static bool withConn(MySqlPool& pool, Fn&& fn)
     {
         auto con = pool.getConnection();
         if (!con || !con->_con)
@@ -32,17 +32,17 @@ public:
         {
             return fn(*con->_con);
         }
-        catch (sql::SQLException &e)
+        catch (sql::SQLException& e)
         {
             Log::error(LogModule::Mysql, "DbSession::withConn: SQL exception: {}", e.what());
             return false;
         }
     }
 
-    static int exec(MySqlPool &pool, const std::string &sql, BindFn bind = nullptr)
+    static int exec(MySqlPool& pool, const std::string& sql, BindFn bind = nullptr)
     {
         int rows = -1;
-        withConn(pool, [&](sql::Connection &conn) {
+        withConn(pool, [&](sql::Connection& conn) {
             auto stmt = std::unique_ptr<sql::PreparedStatement>(conn.prepareStatement(sql));
             if (bind)
             {
@@ -57,9 +57,9 @@ public:
     }
 
     template <typename MapFn>
-    static bool queryOne(MySqlPool &pool, const std::string &sql, BindFn bind, MapFn &&map)
+    static bool queryOne(MySqlPool& pool, const std::string& sql, BindFn bind, MapFn&& map)
     {
-        return withConn(pool, [&](sql::Connection &conn) {
+        return withConn(pool, [&](sql::Connection& conn) {
             auto stmt = std::unique_ptr<sql::PreparedStatement>(conn.prepareStatement(sql));
             if (bind)
             {

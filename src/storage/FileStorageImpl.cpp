@@ -1,20 +1,20 @@
-// LocalFileStorage.cpp - 本地磁盘文件存储实现
-#include "LocalFileStorage.h"
+// FileStorageImpl.cpp - 本地磁盘文件存储实现
+#include "FileStorageImpl.h"
 #include "Log.h"
 #include <boost/filesystem.hpp>
 #include <fstream>
 
-LocalFileStorage::LocalFileStorage(const std::string &rootDir)
+FileStorageImpl::FileStorageImpl(const std::string& rootDir)
     : _rootDir(rootDir)
 {
     boost::filesystem::create_directories(_rootDir + "/avatars");
     boost::filesystem::create_directories(_rootDir + "/images");
-    Log::info(LogModule::File, "LocalFileStorage rootDir: {}", _rootDir);
+    Log::info(LogModule::File, "FileStorageImpl rootDir: {}", _rootDir);
 }
 
-std::string LocalFileStorage::saveFile(const std::string &category,
-                                        const std::string &filename,
-                                        const char *data,
+std::string FileStorageImpl::saveFile(const std::string& category,
+                                        const std::string& filename,
+                                        const char* data,
                                         size_t size)
 {
     if (category != "avatars" && category != "images")
@@ -46,8 +46,8 @@ std::string LocalFileStorage::saveFile(const std::string &category,
     return relative;
 }
 
-bool LocalFileStorage::readFile(const std::string &relativePath,
-                                std::vector<char> &outData)
+bool FileStorageImpl::readFile(const std::string& relativePath,
+                                std::vector<char>& outData)
 {
     boost::filesystem::path file_path = _rootDir + "/" + relativePath;
     std::ifstream ifs(file_path.string(), std::ios::binary | std::ios::ate);
@@ -71,7 +71,7 @@ bool LocalFileStorage::readFile(const std::string &relativePath,
     return true;
 }
 
-bool LocalFileStorage::deleteFile(const std::string &relativePath)
+bool FileStorageImpl::deleteFile(const std::string& relativePath)
 {
     boost::filesystem::path file_path = _rootDir + "/" + relativePath;
     boost::system::error_code ec;

@@ -25,49 +25,49 @@ class Log
 public:
     Log() = delete;
 
-    static bool init(std::string_view app_name, const LogConfig &cfg);
+    static bool init(std::string_view app_name, const LogConfig& cfg);
     static void shutdown();
 
     template <typename... Args>
-    static void trace(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void trace(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).trace(fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void debug(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void debug(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).debug(fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void info(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void info(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).info(fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void warn(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void warn(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).warn(fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void error(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void error(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).error(fmt, std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static void critical(LogModule module, fmt::format_string<Args...> fmt, Args &&...args)
+    static void critical(LogModule module, fmt::format_string<Args...> fmt, Args&&... args)
     {
         logger(module).critical(fmt, std::forward<Args>(args)...);
     }
 
 private:
-    static spdlog::logger &logger(LogModule module);
-    static spdlog::logger &logger(std::string_view module_file);
-    static std::shared_ptr<spdlog::logger> createModuleLogger(const std::string &module_file);
+    static spdlog::logger& logger(LogModule module);
+    static spdlog::logger& logger(std::string_view module_file);
+    static std::shared_ptr<spdlog::logger> createModuleLogger(const std::string& module_file);
 
     static std::mutex _mutex;
     static std::unordered_map<std::string, std::shared_ptr<spdlog::logger>> _loggers;

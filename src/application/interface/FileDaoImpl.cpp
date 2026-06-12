@@ -1,22 +1,22 @@
-// FileDaoAdapter.cpp - 文件数据库操作适配器实现
-#include "FileDaoAdapter.h"
+// FileDaoImpl.cpp - 文件数据库操作适配器实现
+#include "FileDaoImpl.h"
 #include "ConfigMgr.h"
 #include "DbSession.h"
 #include "Log.h"
 
-FileDaoAdapter::FileDaoAdapter()
+FileDaoImpl::FileDaoImpl()
 {
-    auto &cfg = ConfigMgr::getInstance();
+    auto& cfg = ConfigMgr::getInstance();
     auto mysql = cfg["MySql"];
     _pool = std::make_unique<MySqlPool>(mysql["Host"] + ":" + mysql["Port"], mysql["User"],
                                         mysql["Passwd"], mysql["Schema"], 5);
-    Log::info(LogModule::Mysql, "FileDaoAdapter initialized");
+    Log::info(LogModule::Mysql, "FileDaoImpl initialized");
 }
 
-bool FileDaoAdapter::updateAvatar(int uid, const std::string &iconUrl)
+bool FileDaoImpl::updateAvatar(int uid, const std::string& iconUrl)
 {
     bool ok = DbSession::exec(*_pool, "UPDATE user SET icon = ? WHERE uid = ?",
-                              [&](sql::PreparedStatement &stmt) {
+                              [&](sql::PreparedStatement& stmt) {
                                   stmt.setString(1, iconUrl);
                                   stmt.setInt(2, uid);
                               }) > 0;

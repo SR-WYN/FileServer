@@ -6,8 +6,8 @@
 std::atomic<bool> FileNodeHeartbeat::_running{false};
 std::thread FileNodeHeartbeat::_worker;
 
-void FileNodeHeartbeat::start(const std::string &name, const std::string &instance_id,
-                              const std::string &host, const std::string &port)
+void FileNodeHeartbeat::start(const std::string& name, const std::string& instance_id,
+                              const std::string& host, const std::string& port)
 {
     if (_running.exchange(true))
     {

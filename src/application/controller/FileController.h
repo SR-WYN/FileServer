@@ -6,19 +6,19 @@
 #include <string>
 
 class HttpConnection;
-class IFileStorage;
-class IFileDao;
-class IStatusServiceClient;
-class IMultipartParser;
-class IFileValidator;
+class FileStorage;
+class FileDao;
+class StatusServiceClient;
+class MultipartParser;
+class FileValidator;
 
 class FileController
 {
 public:
-    FileController(std::shared_ptr<IFileStorage> storage, std::shared_ptr<IFileDao> fileDao,
-                   std::shared_ptr<IStatusServiceClient> statusClient,
-                   std::shared_ptr<IMultipartParser> parser,
-                   std::shared_ptr<IFileValidator> validator);
+    FileController(std::shared_ptr<FileStorage> storage, std::shared_ptr<FileDao> fileDao,
+                   std::shared_ptr<StatusServiceClient> statusClient,
+                   std::shared_ptr<MultipartParser> parser,
+                   std::shared_ptr<FileValidator> validator);
 
     void handleUploadAvatar(std::shared_ptr<HttpConnection> conn);
     void handleUploadImage(std::shared_ptr<HttpConnection> conn);
@@ -27,14 +27,14 @@ public:
 
 private:
     // 从请求头提取并验证 Token — 纯编排，不涉及具体实现
-    bool authenticateRequest(std::shared_ptr<HttpConnection> conn, int &outUid);
+    bool authenticateRequest(std::shared_ptr<HttpConnection> conn, int& outUid);
 
     // 生成唯一文件名
-    static std::string generateFileName(int uid, const std::string &originalName);
+    static std::string generateFileName(int uid, const std::string& originalName);
 
-    std::shared_ptr<IFileStorage> _storage;
-    std::shared_ptr<IFileDao> _fileDao;
-    std::shared_ptr<IStatusServiceClient> _statusClient;
-    std::shared_ptr<IMultipartParser> _parser;
-    std::shared_ptr<IFileValidator> _validator;
+    std::shared_ptr<FileStorage> _storage;
+    std::shared_ptr<FileDao> _fileDao;
+    std::shared_ptr<StatusServiceClient> _statusClient;
+    std::shared_ptr<MultipartParser> _parser;
+    std::shared_ptr<FileValidator> _validator;
 };

@@ -1,10 +1,10 @@
-// StatusServiceClientAdapter.cpp - StatusServer gRPC 客户端适配器实现
-#include "StatusServiceClientAdapter.h"
+// StatusServiceClientImpl.cpp - StatusServer gRPC 客户端适配器实现
+#include "StatusServiceClientImpl.h"
 #include "Log.h"
 #include "StatusGrpcClient.h"
 #include "error_codes.h"
 
-TokenValidateResult StatusServiceClientAdapter::validateToken(int uid, const std::string &token)
+TokenValidateResult StatusServiceClientImpl::validateToken(int uid, const std::string& token)
 {
     TokenValidateResult result;
     int error = StatusGrpcClient::getInstance().validateToken(uid, token);

@@ -1,3 +1,4 @@
+// FileNodeHeartbeat.h - 向 StatusServer 注册和心跳
 #pragma once
 
 #include <atomic>
@@ -7,10 +8,10 @@
 class FileNodeHeartbeat
 {
 public:
-    static void start(const std::string &name,
-                      const std::string &instance_id,
-                      const std::string &host,
-                      const std::string &port);
+    static void start(const std::string& name,
+                      const std::string& instance_id,
+                      const std::string& host,
+                      const std::string& port);
 
     static void stop();
 

@@ -24,7 +24,7 @@ unsigned char utils::fromHex(unsigned char x)
         return 0;
 }
 
-std::string utils::urlEncode(const std::string &str)
+std::string utils::urlEncode(const std::string& str)
 {
     std::string strTemp = "";
     for (unsigned char c : str)
@@ -47,7 +47,7 @@ std::string utils::urlEncode(const std::string &str)
     return strTemp;
 }
 
-std::string utils::urlDecode(const std::string &str)
+std::string utils::urlDecode(const std::string& str)
 {
     std::string strTemp = "";
     size_t length = str.length();
@@ -85,7 +85,7 @@ utils::Defer::~Defer()
 
 Json::Value parseJsonBody(std::shared_ptr<HttpConnection> conn)
 {
-    auto &request = conn->GetRequest();
+    auto& request = conn->GetRequest();
     std::string body_str = boost::beast::buffers_to_string(request.body().data());
     if (body_str.empty())
     {
@@ -105,9 +105,9 @@ Json::Value parseJsonBody(std::shared_ptr<HttpConnection> conn)
     return root;
 }
 
-void makeJsonResponse(std::shared_ptr<HttpConnection> conn, const Json::Value &root)
+void makeJsonResponse(std::shared_ptr<HttpConnection> conn, const Json::Value& root)
 {
-    auto &response = conn->GetResponse();
+    auto& response = conn->GetResponse();
     response.set(http::field::content_type, "application/json");
     Json::StreamWriterBuilder builder;
     builder["indentation"] = "";

@@ -15,12 +15,12 @@ SectionInfo::~SectionInfo()
     _section_datas.clear();
 }
 
-SectionInfo::SectionInfo(const SectionInfo &src)
+SectionInfo::SectionInfo(const SectionInfo& src)
 {
     _section_datas = src._section_datas;
 }
 
-SectionInfo &SectionInfo::operator=(const SectionInfo &src)
+SectionInfo& SectionInfo::operator=(const SectionInfo& src)
 {
     if (&src == this)
     {
@@ -30,7 +30,7 @@ SectionInfo &SectionInfo::operator=(const SectionInfo &src)
     return *this;
 }
 
-std::string SectionInfo::operator[](const std::string &key)
+std::string SectionInfo::operator[](const std::string& key)
 {
     if (_section_datas.find(key) == _section_datas.end())
     {
@@ -56,7 +56,7 @@ ConfigMgr::ConfigMgr()
         return;
     }
 
-    for (auto const &section_name : root.getMemberNames())
+    for (auto const& section_name : root.getMemberNames())
     {
         Json::Value section_value = root[section_name];
 
@@ -64,7 +64,7 @@ ConfigMgr::ConfigMgr()
         {
             SectionInfo section_info;
             // 遍历该 Section 下的所有键值对
-            for (auto const &key : section_value.getMemberNames())
+            for (auto const& key : section_value.getMemberNames())
             {
                 // 统一转为 string 存储
                 section_info._section_datas[key] = section_value[key].asString();
@@ -79,7 +79,7 @@ ConfigMgr::ConfigMgr()
 
 namespace
 {
-spdlog::level::level_enum parseLogLevel(const std::string &level_str)
+spdlog::level::level_enum parseLogLevel(const std::string& level_str)
 {
     std::string level = level_str;
     std::transform(level.begin(), level.end(), level.begin(), [](unsigned char c) {
@@ -155,7 +155,7 @@ void ConfigMgr::loadFileRules()
     if (root.isMember("AllowedExtensions") && root["AllowedExtensions"].isArray())
     {
         std::string ext_str;
-        for (const auto &ext : root["AllowedExtensions"])
+        for (const auto& ext : root["AllowedExtensions"])
         {
             if (!ext_str.empty())
                 ext_str += ",";
@@ -165,7 +165,7 @@ void ConfigMgr::loadFileRules()
     }
     if (root.isMember("MaxFileSize") && root["MaxFileSize"].isObject())
     {
-        for (const auto &key : root["MaxFileSize"].getMemberNames())
+        for (const auto& key : root["MaxFileSize"].getMemberNames())
         {
             section._section_datas["MaxFileSize_" + key] = root["MaxFileSize"][key].asString();
         }
@@ -184,7 +184,7 @@ ConfigMgr::~ConfigMgr()
     _config_map.clear();
 }
 
-SectionInfo ConfigMgr::operator[](const std::string &section)
+SectionInfo ConfigMgr::operator[](const std::string& section)
 {
     if (_config_map.find(section) == _config_map.end())
     {

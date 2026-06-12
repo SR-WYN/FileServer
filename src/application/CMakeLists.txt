@@ -1,10 +1,10 @@
 add_library(fs_application STATIC
     LogicSystem.cpp
     controller/FileController.cpp
-    interface/FileDaoAdapter.cpp
-    interface/StatusServiceClientAdapter.cpp
-    interface/MultipartParserAdapter.cpp
-    interface/FileValidatorAdapter.cpp
+    interface/FileDaoImpl.cpp
+    interface/StatusServiceClientImpl.cpp
+    interface/MultipartParserImpl.cpp
+    interface/FileValidatorImpl.cpp
 )
 target_link_libraries(fs_application PUBLIC
     fileserver_includes

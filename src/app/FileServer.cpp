@@ -30,7 +30,7 @@ int main()
         LOGI(LogModule::App, "FileServer starting");
 
         // 2. 启动 HTTP 服务器
-        auto &cfg = ConfigMgr::getInstance();
+        auto& cfg = ConfigMgr::getInstance();
         unsigned short port = static_cast<unsigned short>(std::stoul(cfg["FileServer"]["Port"]));
 
         AsioIOServicePool::getInstance();
@@ -76,7 +76,7 @@ int main()
         LOGI(LogModule::App, "FileServer stopped gracefully");
         Log::shutdown();
     }
-    catch (std::exception &e)
+    catch (std::exception& e)
     {
         std::cerr << "FileServer exception: " << e.what() << std::endl;
         LOGE(LogModule::App, "FileServer exception: {}", e.what());
