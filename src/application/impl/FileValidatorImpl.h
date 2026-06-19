@@ -11,7 +11,7 @@ class FileValidatorImpl : public FileValidator
 public:
     FileValidatorImpl();
 
-    bool isAllowedExtension(const std::string& filename) override;
+    bool isAllowedExtension(const std::string &filename) override;
     bool isFileSizeValid(size_t size, bool isAvatar) override;
 
 private:

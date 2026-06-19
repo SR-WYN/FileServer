@@ -25,9 +25,11 @@ FileValidatorImpl::FileValidatorImpl()
     }
 
     auto max_avatar = rules["MaxFileSize_avatar"];
-    if (!max_avatar.empty()) _maxAvatarSize = std::stoll(max_avatar);
+    if (!max_avatar.empty())
+        _maxAvatarSize = std::stoll(max_avatar);
     auto max_image = rules["MaxFileSize_image"];
-    if (!max_image.empty()) _maxImageSize = std::stoll(max_image);
+    if (!max_image.empty())
+        _maxImageSize = std::stoll(max_image);
 
     Log::info(LogModule::App,
               "FileValidatorImpl: {} allowed extensions, "
@@ -35,12 +37,13 @@ FileValidatorImpl::FileValidatorImpl()
               _allowedExtensions.size(), _maxAvatarSize, _maxImageSize);
 }
 
-bool FileValidatorImpl::isAllowedExtension(const std::string& filename)
+bool FileValidatorImpl::isAllowedExtension(const std::string &filename)
 {
     auto pos = filename.rfind('.');
-    if (pos == std::string::npos) return false;
+    if (pos == std::string::npos)
+        return false;
     std::string ext = filename.substr(pos);
-    for (auto& c : ext)
+    for (auto &c : ext)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
     return _allowedExtensions.find(ext) != _allowedExtensions.end();
 }

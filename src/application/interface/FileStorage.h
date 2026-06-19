@@ -17,20 +17,17 @@ public:
     /// @param data     文件二进制数据
     /// @param size     数据长度
     /// @return 保存成功返回相对路径（如 "avatars/42_1689000012.jpg"），失败返回空字符串
-    virtual std::string saveFile(const std::string& category,
-                                  const std::string& filename,
-                                  const char* data,
-                                  size_t size) = 0;
+    virtual std::string saveFile(const std::string &category, const std::string &filename,
+                                 const char *data, size_t size) = 0;
 
     /// 读取文件内容
     /// @param relativePath 相对路径（如 "avatars/42_1689000012.jpg"）
     /// @param outData      输出缓冲区
     /// @return true 读取成功，false 文件不存在或读取失败
-    virtual bool readFile(const std::string& relativePath,
-                          std::vector<char>& outData) = 0;
+    virtual bool readFile(const std::string &relativePath, std::vector<char> &outData) = 0;
 
     /// 删除文件
     /// @param relativePath 相对路径
     /// @return true 删除成功，false 删除失败
-    virtual bool deleteFile(const std::string& relativePath) = 0;
+    virtual bool deleteFile(const std::string &relativePath) = 0;
 };

@@ -21,5 +21,5 @@ public:
     /// @param uid   用户 ID
     /// @param token 登录时颁发的 Token
     /// @return TokenValidateResult（error == 0 表示有效）
-    virtual TokenValidateResult validateToken(int uid, const std::string& token) = 0;
+    virtual TokenValidateResult validateToken(int uid, const std::string &token) = 0;
 };

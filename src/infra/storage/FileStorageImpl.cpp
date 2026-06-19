@@ -6,18 +6,15 @@
 
 #include <fstream>
 
-FileStorageImpl::FileStorageImpl(const std::string& rootDir)
-    : _rootDir(rootDir)
+FileStorageImpl::FileStorageImpl(const std::string &rootDir) : _rootDir(rootDir)
 {
     boost::filesystem::create_directories(_rootDir + "/avatars");
     boost::filesystem::create_directories(_rootDir + "/images");
     Log::info(LogModule::File, "FileStorageImpl rootDir: {}", _rootDir);
 }
 
-std::string FileStorageImpl::saveFile(const std::string& category,
-                                        const std::string& filename,
-                                        const char* data,
-                                        size_t size)
+std::string FileStorageImpl::saveFile(const std::string &category, const std::string &filename,
+                                      const char *data, size_t size)
 {
     if (category != "avatars" && category != "images")
     {
@@ -48,8 +45,7 @@ std::string FileStorageImpl::saveFile(const std::string& category,
     return relative;
 }
 
-bool FileStorageImpl::readFile(const std::string& relativePath,
-                                std::vector<char>& outData)
+bool FileStorageImpl::readFile(const std::string &relativePath, std::vector<char> &outData)
 {
     boost::filesystem::path file_path = _rootDir + "/" + relativePath;
     std::ifstream ifs(file_path.string(), std::ios::binary | std::ios::ate);
@@ -73,14 +69,14 @@ bool FileStorageImpl::readFile(const std::string& relativePath,
     return true;
 }
 
-bool FileStorageImpl::deleteFile(const std::string& relativePath)
+bool FileStorageImpl::deleteFile(const std::string &relativePath)
 {
     boost::filesystem::path file_path = _rootDir + "/" + relativePath;
     boost::system::error_code ec;
     if (!boost::filesystem::remove(file_path, ec))
     {
-        Log::warn(LogModule::File, "deleteFile: failed to delete {}: {}",
-                  file_path.string(), ec.message());
+        Log::warn(LogModule::File, "deleteFile: failed to delete {}: {}", file_path.string(),
+                  ec.message());
         return false;
     }
     Log::info(LogModule::File, "deleteFile: deleted {}", relativePath);

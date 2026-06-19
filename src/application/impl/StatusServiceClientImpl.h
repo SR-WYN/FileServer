@@ -10,5 +10,5 @@ class StatusServiceClientImpl : public StatusServiceClient
 {
 public:
     /// 验证 Token，委托给 StatusGrpcClient::validateToken
-    TokenValidateResult validateToken(int uid, const std::string& token) override;
+    TokenValidateResult validateToken(int uid, const std::string &token) override;
 };

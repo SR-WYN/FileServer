@@ -11,7 +11,7 @@ public:
     virtual ~FileValidator() = default;
 
     /// 检查文件扩展名是否在白名单内
-    virtual bool isAllowedExtension(const std::string& filename) = 0;
+    virtual bool isAllowedExtension(const std::string &filename) = 0;
 
     /// 检查文件大小是否在允许范围内
     /// @param size     文件字节数

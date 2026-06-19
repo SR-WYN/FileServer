@@ -4,7 +4,7 @@
 #include "StatusGrpcClient.h"
 #include "error_codes.h"
 
-TokenValidateResult StatusServiceClientImpl::validateToken(int uid, const std::string& token)
+TokenValidateResult StatusServiceClientImpl::validateToken(int uid, const std::string &token)
 {
     TokenValidateResult result;
     int error = StatusGrpcClient::getInstance().validateToken(uid, token);

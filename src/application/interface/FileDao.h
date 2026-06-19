@@ -14,5 +14,5 @@ public:
     /// @param uid      用户 ID
     /// @param iconUrl  头像相对 URL（如 "avatars/42_1689000012.jpg"）
     /// @return true 更新成功，false 更新失败
-    virtual bool updateAvatar(int uid, const std::string& iconUrl) = 0;
+    virtual bool updateAvatar(int uid, const std::string &iconUrl) = 0;
 };

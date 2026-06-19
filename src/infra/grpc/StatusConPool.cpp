@@ -8,12 +8,10 @@
 #include <memory>
 
 StatusConPool::StatusConPool(size_t poolSize, std::string host, std::string port)
-    : _pool_size(poolSize),
-      _host(host),
-      _port(port),
-      _b_stop(false)
+    : _pool_size(poolSize), _host(host), _port(port), _b_stop(false)
 {
-    Log::info(LogModule::Grpc, "StatusConPool creating {} connections to {}:{}", poolSize, host, port);
+    Log::info(LogModule::Grpc, "StatusConPool creating {} connections to {}:{}", poolSize, host,
+              port);
     for (size_t i = 0; i < poolSize; i++)
     {
         std::shared_ptr<Channel> channel =
@@ -25,7 +23,8 @@ StatusConPool::StatusConPool(size_t poolSize, std::string host, std::string port
 
 StatusConPool::~StatusConPool()
 {
-    Log::info(LogModule::Grpc, "StatusConPool destroying, remaining connections: {}", _connections.size());
+    Log::info(LogModule::Grpc, "StatusConPool destroying, remaining connections: {}",
+              _connections.size());
     std::lock_guard<std::mutex> lock(_mutex);
     close();
     while (!_connections.empty())
@@ -37,7 +36,7 @@ StatusConPool::~StatusConPool()
 std::unique_ptr<StatusService::Stub> StatusConPool::getConnection()
 {
     std::unique_lock<std::mutex> lock(_mutex);
-    _cond.wait(lock,[this]{
+    _cond.wait(lock, [this] {
         if (_b_stop)
         {
             return true;

@@ -2,17 +2,18 @@
 #pragma once
 
 #include "FileDao.h"
-#include "MySqlPool.h"
 #include <memory>
+
+class MySqlMgr;
 
 class FileDaoImpl : public FileDao
 {
 public:
-    FileDaoImpl();
+    explicit FileDaoImpl(std::shared_ptr<MySqlMgr> mysql_mgr);
     ~FileDaoImpl() override = default;
 
-    bool updateAvatar(int uid, const std::string& iconUrl) override;
+    bool updateAvatar(int uid, const std::string &iconUrl) override;
 
 private:
-    std::unique_ptr<MySqlPool> _pool;
+    std::shared_ptr<MySqlMgr> _mysql_mgr;
 };

@@ -7,7 +7,7 @@
 MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> conn)
 {
     MultipartParseResult result;
-    auto& request = conn->getRequest();
+    auto &request = conn->getRequest();
 
     std::string body = boost::beast::buffers_to_string(request.body().data());
     std::string content_type(request[http::field::content_type]);
@@ -20,8 +20,10 @@ MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> 
         return result;
     }
     std::string boundary = content_type.substr(pos + 9);
-    if (!boundary.empty() && boundary.front() == '"') boundary = boundary.substr(1);
-    if (!boundary.empty() && boundary.back() == '"') boundary.pop_back();
+    if (!boundary.empty() && boundary.front() == '"')
+        boundary = boundary.substr(1);
+    if (!boundary.empty() && boundary.back() == '"')
+        boundary.pop_back();
 
     std::string delimiter = "--" + boundary;
     auto body_start = body.find(delimiter);
@@ -53,16 +55,16 @@ MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> 
 
     // 提取文件数据结束（下一个分隔符或文件尾）
     auto data_end = body.find(delimiter, data_start);
-    if (data_end == std::string::npos) data_end = body.size();
-    while (data_end > data_start &&
-           (body[data_end - 1] == '\r' || body[data_end - 1] == '\n'))
+    if (data_end == std::string::npos)
+        data_end = body.size();
+    while (data_end > data_start && (body[data_end - 1] == '\r' || body[data_end - 1] == '\n'))
         data_end--;
 
     result.data = body.data() + data_start;
     result.size = data_end - data_start;
     result.valid = true;
 
-    Log::debug(LogModule::Http, "MultipartParserImpl: parsed file '{}' ({} bytes)",
-               result.filename, result.size);
+    Log::debug(LogModule::Http, "MultipartParserImpl: parsed file '{}' ({} bytes)", result.filename,
+               result.size);
     return result;
 }

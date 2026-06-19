@@ -1,35 +1,56 @@
 // MySqlPool.cpp - MySQL 连接池实现：初始化连接、心跳检查、断线重连补偿
 #include "MySqlPool.h"
+#include "ConfigMgr.h"
 #include "Log.h"
 #include "utils.h"
 
 #include <cppconn/exception.h>
+#include <cppconn/statement.h>
 #include <mysql_driver.h>
 
 #include <mutex>
 
-SqlConnection::SqlConnection(sql::Connection* con, int64_t lasttime)
-    : _con(con),
-      _last_oper_time(lasttime)
+SqlConnection::SqlConnection(sql::Connection *con, int64_t lasttime)
+    : _con(con), _last_oper_time(lasttime)
 {
 }
 
-MySqlPool::MySqlPool(const std::string& url, const std::string& user, const std::string& pass,
-                     const std::string& schema, int poolSize)
-    : _url(url),
-      _user(user),
-      _pass(pass),
-      _schema(schema),
-      _pool_size(poolSize),
-      _b_stop(false),
-      _fail_count(0)
+MySqlPool::MySqlPool() = default;
+
+void MySqlPool::initOnce()
 {
+    auto &pool = getInstance();
+    std::lock_guard<std::mutex> lock(pool._init_mutex);
+    if (pool._initialized.load())
+    {
+        return;
+    }
+    auto &cfg = ConfigMgr::getInstance();
+    const auto &host = cfg["MySql"]["Host"];
+    const auto &port = cfg["MySql"]["Port"];
+    const auto &user = cfg["MySql"]["User"];
+    const auto &pass = cfg["MySql"]["Passwd"];
+    const auto &schema = cfg["MySql"]["Schema"];
+    pool.initPool(host + ":" + port, user, pass, schema, 5);
+    pool._initialized.store(true);
+}
+
+void MySqlPool::initPool(const std::string &url, const std::string &user, const std::string &pass,
+                         const std::string &schema, int poolSize)
+{
+    _url = url;
+    _user = user;
+    _pass = pass;
+    _schema = schema;
+    _pool_size = poolSize;
+    _b_stop.store(false);
+    _fail_count.store(0);
     try
     {
         for (int i = 0; i < _pool_size; i++)
         {
-            sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
-            auto* con = driver->connect(_url, _user, _pass);
+            sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
+            auto *con = driver->connect(_url, _user, _pass);
             con->setSchema(_schema);
             // 获取当前时间戳
             auto currentTime = std::chrono::system_clock::now().time_since_epoch();
@@ -38,21 +59,19 @@ MySqlPool::MySqlPool(const std::string& url, const std::string& user, const std:
                 std::chrono::duration_cast<std::chrono::seconds>(currentTime).count();
             _pool.push(std::make_unique<SqlConnection>(con, timestamp));
         }
-        Log::info(LogModule::Mysql, "MySqlPool initialized: {} connections to {}/{}",
-                  _pool_size, _url, _schema);
+        Log::info(LogModule::Mysql, "MySqlPool initialized: {} connections to {}/{}", _pool_size,
+                  _url, _schema);
 
-        _check_thread = std::thread(
-            [this]()
+        _check_thread = std::thread([this]() {
+            while (!_b_stop)
             {
-                while (!_b_stop)
-                {
-                    Log::debug(LogModule::Mysql, "MySqlPool checkConnection starting");
-                    checkConnection();
-                    std::this_thread::sleep_for(std::chrono::seconds(60));
-                }
-            });
+                Log::debug(LogModule::Mysql, "MySqlPool checkConnection starting");
+                checkConnection();
+                std::this_thread::sleep_for(std::chrono::seconds(60));
+            }
+        });
     }
-    catch (sql::SQLException& e)
+    catch (sql::SQLException &e)
     {
         Log::error(LogModule::Mysql, "MySqlPool constructor failed: {}", e.what());
     }
@@ -81,16 +100,14 @@ void MySqlPool::checkConnection()
         }
 
         bool healthy = true;
-        utils::Defer defer(
-            [&]
+        utils::Defer defer([&] {
+            if (healthy && con)
             {
-                if (healthy && con)
-                {
-                    std::lock_guard<std::mutex> lock(_mutex);
-                    _pool.push(std::move(con));
-                    _cond.notify_one();
-                }
-            });
+                std::lock_guard<std::mutex> lock(_mutex);
+                _pool.push(std::move(con));
+                _cond.notify_one();
+            }
+        });
 
         // 检查活跃度
         if (timestamp - con->_last_oper_time >= 5)
@@ -101,7 +118,7 @@ void MySqlPool::checkConnection()
                 stmt->executeQuery("SELECT 1");
                 con->_last_oper_time = timestamp;
             }
-            catch (sql::SQLException& e)
+            catch (sql::SQLException &e)
             {
                 healthy = false; // 标记为坏连接，DEFER 此时不会将其还回池子
                 Log::warn(LogModule::Mysql, "checkConnection: bad connection, {}", e.what());
@@ -131,8 +148,8 @@ bool MySqlPool::reconnect(long long timestamp)
 {
     try
     {
-        sql::mysql::MySQL_Driver* driver = sql::mysql::get_mysql_driver_instance();
-        auto* con = driver->connect(_url, _user, _pass);
+        sql::mysql::MySQL_Driver *driver = sql::mysql::get_mysql_driver_instance();
+        auto *con = driver->connect(_url, _user, _pass);
         con->setSchema(_schema);
 
         auto newCon = std::make_unique<SqlConnection>(con, timestamp);
@@ -144,7 +161,7 @@ bool MySqlPool::reconnect(long long timestamp)
         Log::info(LogModule::Mysql, "reconnect: succeeded");
         return true;
     }
-    catch (sql::SQLException& e)
+    catch (sql::SQLException &e)
     {
         Log::error(LogModule::Mysql, "reconnect: failed, {}", e.what());
         return false;
@@ -154,15 +171,13 @@ bool MySqlPool::reconnect(long long timestamp)
 std::unique_ptr<SqlConnection> MySqlPool::getConnection()
 {
     std::unique_lock<std::mutex> lock(_mutex);
-    _cond.wait(lock,
-               [this]()
-               {
-                   if (_b_stop)
-                   {
-                       return true;
-                   }
-                   return !_pool.empty();
-               });
+    _cond.wait(lock, [this]() {
+        if (_b_stop)
+        {
+            return true;
+        }
+        return !_pool.empty();
+    });
     if (_b_stop)
     {
         return nullptr;
@@ -192,6 +207,12 @@ void MySqlPool::close()
 
 MySqlPool::~MySqlPool()
 {
+    close();
+    if (_check_thread.joinable())
+    {
+        _check_thread.join();
+    }
+
     std::unique_lock<std::mutex> lock(_mutex);
     while (!_pool.empty())
     {

@@ -11,7 +11,7 @@ class HttpConnection;
 struct MultipartParseResult
 {
     std::string filename;      // 原始文件名
-    const char* data{nullptr}; // 文件二进制数据指针（指向请求体内部缓冲区）
+    const char *data{nullptr}; // 文件二进制数据指针（指向请求体内部缓冲区）
     size_t size{0};            // 文件大小
     bool valid{false};         // 解析是否成功
 };

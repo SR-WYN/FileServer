@@ -2,27 +2,29 @@ set_source_files_properties(${PROTO_SRCS} PROPERTIES GENERATED TRUE)
 
 add_library(fileserver_includes INTERFACE)
 target_include_directories(fileserver_includes INTERFACE
-    ${CMAKE_CURRENT_SOURCE_DIR}/common
     ${CMAKE_CURRENT_SOURCE_DIR}/domain
+    ${CMAKE_CURRENT_SOURCE_DIR}/application
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/interface
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/impl
+    ${CMAKE_CURRENT_SOURCE_DIR}/application/controller
+    ${CMAKE_CURRENT_SOURCE_DIR}/infra/base
+    ${CMAKE_CURRENT_SOURCE_DIR}/infra/log
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/config
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/mysql
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/grpc
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/heartbeat
-    ${CMAKE_CURRENT_SOURCE_DIR}/application
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/interface
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/common
-    ${CMAKE_CURRENT_SOURCE_DIR}/application/controller
-    ${CMAKE_CURRENT_SOURCE_DIR}/storage
-    ${CMAKE_CURRENT_SOURCE_DIR}/net
+    ${CMAKE_CURRENT_SOURCE_DIR}/infra/net
+    ${CMAKE_CURRENT_SOURCE_DIR}/infra/storage
     ${PROTO_GEN_DIR}
 )
 
-add_subdirectory(common)
 add_subdirectory(domain)
+add_subdirectory(infra/base)
+add_subdirectory(infra/log)
 add_subdirectory(infra/config)
 add_subdirectory(infra/mysql)
-add_subdirectory(net)
-add_subdirectory(storage)
+add_subdirectory(infra/net)
+add_subdirectory(infra/storage)
 add_subdirectory(infra/grpc)
 add_subdirectory(infra/heartbeat)
 add_subdirectory(application)
@@ -47,14 +49,15 @@ add_dependencies(${PROJECT_NAME} fileserver_proto_gen)
 target_link_libraries(${PROJECT_NAME} PRIVATE
     fileserver_includes
     fileserver_app_dir
-    fs_common
+    fs_application
+    fs_base
+    fs_log
     fs_config
     fs_mysql
     fs_net
     fs_storage
     fs_grpc
     fs_heartbeat
-    fs_application
     Boost::system
     Boost::thread
     Boost::filesystem

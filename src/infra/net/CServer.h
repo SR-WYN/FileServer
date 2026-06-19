@@ -10,12 +10,12 @@ class CServer : public std::enable_shared_from_this<CServer>
 public:
     /// @param ioc  主 io_context
     /// @param port 监听端口
-    CServer(boost::asio::io_context& ioc, unsigned short& port);
+    CServer(boost::asio::io_context &ioc, unsigned short &port);
 
     /// 开始异步接受连接
     void start();
 
 private:
-    tcp::acceptor _acceptor;  ///< TCP 接受器
-    net::io_context& _ioc;    ///< 主 io_context 引用
+    tcp::acceptor _acceptor; ///< TCP 接受器
+    net::io_context &_ioc;   ///< 主 io_context 引用
 };

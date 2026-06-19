@@ -4,7 +4,7 @@
 #include "LogicSystem.h"
 #include "utils.h"
 
-HttpConnection::HttpConnection(boost::asio::io_context& ioc) : _socket(ioc)
+HttpConnection::HttpConnection(boost::asio::io_context &ioc) : _socket(ioc)
 {
 }
 
@@ -22,12 +22,11 @@ void HttpConnection::start()
                              }
                              boost::ignore_unused(bytes_transferred);
                              Log::info(LogModule::Http, "Received request: {} {}",
-                                       self->_request.method_string(),
-                                       self->_request.target());
+                                       self->_request.method_string(), self->_request.target());
                              self->handleReq();
                              self->checkDeadline();
                          }
-                         catch (std::exception& e)
+                         catch (std::exception &e)
                          {
                              Log::error(LogModule::Http, "http read handler exception: {}",
                                         e.what());
@@ -147,22 +146,22 @@ void HttpConnection::checkDeadline()
     });
 }
 
-http::response<http::dynamic_body>& HttpConnection::getResponse()
+http::response<http::dynamic_body> &HttpConnection::getResponse()
 {
     return _response;
 }
 
-const http::request<http::dynamic_body>& HttpConnection::getRequest() const
+const http::request<http::dynamic_body> &HttpConnection::getRequest() const
 {
     return _request;
 }
 
-const std::unordered_map<std::string, std::string>& HttpConnection::getParams() const
+const std::unordered_map<std::string, std::string> &HttpConnection::getParams() const
 {
     return _get_params;
 }
 
-tcp::socket& HttpConnection::getSocket()
+tcp::socket &HttpConnection::getSocket()
 {
     return _socket;
 }

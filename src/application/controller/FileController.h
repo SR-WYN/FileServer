@@ -27,10 +27,10 @@ public:
 
 private:
     // 从请求头提取并验证 Token — 纯编排，不涉及具体实现
-    bool authenticateRequest(std::shared_ptr<HttpConnection> conn, int& outUid);
+    bool authenticateRequest(std::shared_ptr<HttpConnection> conn, int &outUid);
 
     // 生成唯一文件名
-    static std::string generateFileName(int uid, const std::string& originalName);
+    static std::string generateFileName(int uid, const std::string &originalName);
 
     std::shared_ptr<FileStorage> _storage;
     std::shared_ptr<FileDao> _fileDao;

@@ -27,9 +27,9 @@ AsioIOServicePool::~AsioIOServicePool()
     stop();
 }
 
-boost::asio::io_context& AsioIOServicePool::getIoService()
+boost::asio::io_context &AsioIOServicePool::getIoService()
 {
-    auto& service = _io_services[_next_io_service++];
+    auto &service = _io_services[_next_io_service++];
     if (_next_io_service == _io_services.size())
     {
         _next_io_service = 0;
@@ -40,7 +40,7 @@ boost::asio::io_context& AsioIOServicePool::getIoService()
 void AsioIOServicePool::stop()
 {
     Log::info(LogModule::App, "AsioIOServicePool stopping {} threads", _threads.size());
-    for (auto& work : _works)
+    for (auto &work : _works)
     {
         if (work)
         {
@@ -49,7 +49,7 @@ void AsioIOServicePool::stop()
         }
     }
     _works.clear();
-    for (auto& t : _threads)
+    for (auto &t : _threads)
     {
         if (t.joinable())
         {
