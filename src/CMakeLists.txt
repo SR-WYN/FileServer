@@ -12,7 +12,6 @@ target_include_directories(fileserver_includes INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/config
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/mysql
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/grpc
-    ${CMAKE_CURRENT_SOURCE_DIR}/infra/heartbeat
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/net
     ${CMAKE_CURRENT_SOURCE_DIR}/infra/storage
     ${PROTO_GEN_DIR}
@@ -26,7 +25,6 @@ add_subdirectory(infra/mysql)
 add_subdirectory(infra/net)
 add_subdirectory(infra/storage)
 add_subdirectory(infra/grpc)
-add_subdirectory(infra/heartbeat)
 add_subdirectory(application)
 add_subdirectory(app)
 
@@ -57,7 +55,6 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     fs_net
     fs_storage
     fs_grpc
-    fs_heartbeat
     Boost::system
     Boost::thread
     Boost::filesystem

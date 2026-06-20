@@ -4,6 +4,7 @@
 #include "Log.h"
 #include "utils.h"
 
+#include <boost/asio/steady_timer.hpp>
 #include <cppconn/exception.h>
 #include <cppconn/statement.h>
 #include <mysql_driver.h>
@@ -61,20 +62,29 @@ void MySqlPool::initPool(const std::string &url, const std::string &user, const 
         }
         Log::info(LogModule::Mysql, "MySqlPool initialized: {} connections to {}/{}", _pool_size,
                   _url, _schema);
-
-        _check_thread = std::thread([this]() {
-            while (!_b_stop)
-            {
-                Log::debug(LogModule::Mysql, "MySqlPool checkConnection starting");
-                checkConnection();
-                std::this_thread::sleep_for(std::chrono::seconds(60));
-            }
-        });
     }
     catch (sql::SQLException &e)
     {
         Log::error(LogModule::Mysql, "MySqlPool constructor failed: {}", e.what());
     }
+}
+
+void MySqlPool::startHealthCheck(boost::asio::io_context &ioc)
+{
+    auto timer = std::make_shared<boost::asio::steady_timer>(ioc);
+
+    std::function<void()> doCheck;
+    doCheck = [this, timer, &doCheck]() {
+        if (_b_stop)
+            return;
+        checkConnection();
+        timer->expires_after(std::chrono::seconds(60));
+        timer->async_wait([&doCheck](const boost::system::error_code &ec) {
+            if (!ec)
+                doCheck();
+        });
+    };
+    doCheck();
 }
 
 void MySqlPool::checkConnection()
@@ -208,12 +218,8 @@ void MySqlPool::close()
 MySqlPool::~MySqlPool()
 {
     close();
-    if (_check_thread.joinable())
-    {
-        _check_thread.join();
-    }
 
-    std::unique_lock<std::mutex> lock(_mutex);
+    std::lock_guard<std::mutex> lock(_mutex);
     while (!_pool.empty())
     {
         _pool.pop();

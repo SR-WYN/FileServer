@@ -1,11 +1,9 @@
 // FileServer.cpp - 文件服务器入口，初始化配置、日志、网络服务
 // 作为组合根，负责创建基础设施、应用层依赖并注册路由
-#include "AsioIOServicePool.h"
 #include "CServer.h"
 #include "ConfigMgr.h"
 #include "FileController.h"
 #include "FileDaoImpl.h"
-#include "FileNodeHeartbeat.h"
 #include "FileStorageImpl.h"
 #include "FileValidatorImpl.h"
 #include "Log.h"
@@ -13,7 +11,9 @@
 #include "MultipartParserImpl.h"
 #include "MySqlMgr.h"
 #include "MySqlPool.h"
+#include "StatusGrpcClient.h"
 #include "StatusServiceClientImpl.h"
+#include "ThreadPoolMgr.h"
 
 #include <boost/asio.hpp>
 
@@ -57,28 +57,68 @@ int main()
         auto file_controller = std::make_shared<FileController>(storage, file_dao, status_client,
                                                                 multipart_parser, file_validator);
 
-        // 4. 初始化路由系统（保留 Singleton 语义）
+        // 4. 初始化路由系统
         LogicSystemImpl::getInstance().initialize(file_controller);
 
         // 5. 启动 HTTP 服务器
         unsigned short port = static_cast<unsigned short>(std::stoul(cfg["FileServer"]["Port"]));
 
-        AsioIOServicePool::getInstance();
+        // 初始化线程池管理器（所有线程池在此创建，包括 IO 池）
+        ThreadPoolMgr::getInstance();
+
         g_ioc = std::make_unique<boost::asio::io_context>();
         g_server = std::make_shared<CServer>(*g_ioc, port);
         g_server->start();
 
-        // 6. 启动心跳注册
+        // 6. 启动心跳注册 → 线程池管理
         {
             auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
                            .count();
             std::string instance_id = std::to_string(now);
-            FileNodeHeartbeat::start("FileServer", instance_id, cfg["FileServer"]["Host"],
-                                     cfg["FileServer"]["Port"]);
+            std::string name = "FileServer";
+            std::string host = cfg["FileServer"]["Host"];
+            std::string svc_port = cfg["FileServer"]["Port"];
+            ThreadPoolMgr::getInstance().runNodeHeartbeat(
+                [name, instance_id, host, svc_port]() {
+                    bool registered = false;
+                    while (true)
+                    {
+                        if (!registered)
+                        {
+                            if (StatusGrpcClient::getInstance().registerChatNode(
+                                    name, instance_id, host, svc_port))
+                            {
+                                registered = true;
+                                Log::info(LogModule::App,
+                                          "FileNodeHeartbeat: registered successfully");
+                            }
+                            else
+                            {
+                                Log::warn(LogModule::App,
+                                          "FileNodeHeartbeat: register failed, will retry");
+                            }
+                        }
+                        else
+                        {
+                            if (!StatusGrpcClient::getInstance().heartbeatChatNode(name,
+                                                                                   instance_id))
+                            {
+                                Log::warn(LogModule::App,
+                                          "FileNodeHeartbeat: heartbeat failed, will re-register");
+                                registered = false;
+                            }
+                        }
+                        for (int i = 0; i < 100; ++i)
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                    }
+                });
         }
 
-        // 7. 用信号处理器安全退出
+        // 7. MySQL 健康检查 → 挂在 acceptor 的 io_context 上
+        MySqlPool::getInstance().startHealthCheck(*g_ioc);
+
+        // 8. 用信号处理器安全退出
         boost::asio::signal_set signals(*g_ioc, SIGINT, SIGTERM);
         signals.async_wait([&](boost::system::error_code ec, int sig) {
             if (!ec)
@@ -91,16 +131,15 @@ int main()
 
         LOGI(LogModule::App, "FileServer started on port {}, waiting for signal...", port);
 
-        // 8. 主循环
+        // 9. 主循环
         g_ioc->run();
         LOGI(LogModule::App, "FileServer stopping...");
 
-        // 9. 停止心跳并注销
-        FileNodeHeartbeat::stop();
+        // 10. 停止心跳并注销
+        ThreadPoolMgr::getInstance().joinNodeHeartbeat();
 
-        // 10. 停止连接池线程，再销毁服务器资源
+        // 11. 停止连接池线程，再销毁服务器资源
         MySqlPool::getInstance().close();
-        AsioIOServicePool::getInstance().stop();
         g_server.reset();
         g_ioc.reset();
 

@@ -1,15 +1,13 @@
-// MySqlPool.h - MySQL 连接池
-// 预创建连接、定期心跳检查、断线自动重连
 #pragma once
 #include "Singleton.h"
 #include <atomic>
+#include <boost/asio/io_context.hpp>
 #include <condition_variable>
 #include <cppconn/connection.h>
 #include <memory>
 #include <mutex>
 #include <queue>
 #include <string>
-#include <thread>
 
 class SqlConnection
 {
@@ -32,6 +30,9 @@ public:
     void checkConnection();
     bool reconnect(long long timestamp);
 
+    // 在指定 io_context 上启动定时健康检查（替代独立线程）
+    void startHealthCheck(boost::asio::io_context &ioc);
+
 private:
     MySqlPool();
     MySqlPool(const MySqlPool &) = delete;
@@ -50,6 +51,5 @@ private:
     std::mutex _mutex;
     std::condition_variable _cond;
     std::atomic<bool> _b_stop{false};
-    std::thread _check_thread;
     std::atomic<int> _fail_count{0};
 };
