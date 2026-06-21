@@ -6,12 +6,12 @@
 #include "error_codes.h"
 #include "utils.h"
 
-using message::HeartbeatChatNodeReq;
-using message::HeartbeatChatNodeRsp;
-using message::RegisterChatNodeReq;
-using message::RegisterChatNodeRsp;
-using message::UnregisterChatNodeReq;
-using message::UnregisterChatNodeRsp;
+using message::HeartbeatNodeReq;
+using message::HeartbeatNodeRsp;
+using message::RegisterNodeReq;
+using message::RegisterNodeRsp;
+using message::UnregisterNodeReq;
+using message::UnregisterNodeRsp;
 using message::ValidateTokenReq;
 using message::ValidateTokenRsp;
 
@@ -61,15 +61,15 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
     }
 }
 
-bool StatusGrpcClient::registerChatNode(const std::string &name, const std::string &instance_id,
-                                        const std::string &host, const std::string &port)
+bool StatusGrpcClient::registerNode(const std::string &name, const std::string &instance_id,
+                                    const std::string &host, const std::string &port)
 {
-    Log::info(LogModule::Grpc, "registerChatNode: name={} instance={} {}:{}", name, instance_id,
-              host, port);
+    Log::info(LogModule::Grpc, "registerNode: name={} instance={} {}:{}", name, instance_id, host,
+              port);
 
     ClientContext context;
-    RegisterChatNodeRsp reply;
-    RegisterChatNodeReq request;
+    RegisterNodeRsp reply;
+    RegisterNodeReq request;
     request.set_name(name);
     request.set_instance_id(instance_id);
     request.set_client_host(host);
@@ -81,26 +81,26 @@ bool StatusGrpcClient::registerChatNode(const std::string &name, const std::stri
     if (!stub)
         return false;
 
-    Status status = stub->RegisterChatNode(&context, request, &reply);
+    Status status = stub->RegisterNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
 
     if (!status.ok())
     {
-        Log::error(LogModule::Grpc, "registerChatNode RPC failed: {}", status.error_message());
+        Log::error(LogModule::Grpc, "registerNode RPC failed: {}", status.error_message());
         return false;
     }
 
     bool ok = (reply.error() == ErrorCodes::SUCCESS);
-    Log::info(LogModule::Grpc, "registerChatNode: {} error={}", ok ? "success" : "failed",
+    Log::info(LogModule::Grpc, "registerNode: {} error={}", ok ? "success" : "failed",
               reply.error());
     return ok;
 }
 
-bool StatusGrpcClient::heartbeatChatNode(const std::string &name, const std::string &instance_id)
+bool StatusGrpcClient::heartbeatNode(const std::string &name, const std::string &instance_id)
 {
     ClientContext context;
-    HeartbeatChatNodeRsp reply;
-    HeartbeatChatNodeReq request;
+    HeartbeatNodeRsp reply;
+    HeartbeatNodeReq request;
     request.set_name(name);
     request.set_instance_id(instance_id);
 
@@ -108,25 +108,25 @@ bool StatusGrpcClient::heartbeatChatNode(const std::string &name, const std::str
     if (!stub)
         return false;
 
-    Status status = stub->HeartbeatChatNode(&context, request, &reply);
+    Status status = stub->HeartbeatNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
 
     if (!status.ok())
     {
-        Log::warn(LogModule::Grpc, "heartbeatChatNode RPC failed: {}", status.error_message());
+        Log::warn(LogModule::Grpc, "heartbeatNode RPC failed: {}", status.error_message());
         return false;
     }
-    Log::debug(LogModule::Grpc, "heartbeatChatNode success, name={}", name);
+    Log::debug(LogModule::Grpc, "heartbeatNode success, name={}", name);
     return reply.error() == ErrorCodes::SUCCESS;
 }
 
-bool StatusGrpcClient::unregisterChatNode(const std::string &name, const std::string &instance_id)
+bool StatusGrpcClient::unregisterNode(const std::string &name, const std::string &instance_id)
 {
-    Log::info(LogModule::Grpc, "unregisterChatNode: name={} instance={}", name, instance_id);
+    Log::info(LogModule::Grpc, "unregisterNode: name={} instance={}", name, instance_id);
 
     ClientContext context;
-    UnregisterChatNodeRsp reply;
-    UnregisterChatNodeReq request;
+    UnregisterNodeRsp reply;
+    UnregisterNodeReq request;
     request.set_name(name);
     request.set_instance_id(instance_id);
 
@@ -134,16 +134,16 @@ bool StatusGrpcClient::unregisterChatNode(const std::string &name, const std::st
     if (!stub)
         return false;
 
-    Status status = stub->UnregisterChatNode(&context, request, &reply);
+    Status status = stub->UnregisterNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
 
     if (!status.ok())
     {
-        Log::warn(LogModule::Grpc, "unregisterChatNode RPC failed: {}", status.error_message());
+        Log::warn(LogModule::Grpc, "unregisterNode RPC failed: {}", status.error_message());
         return false;
     }
 
     bool ok = (reply.error() == ErrorCodes::SUCCESS);
-    Log::info(LogModule::Grpc, "unregisterChatNode: {}", ok ? "success" : "failed");
+    Log::info(LogModule::Grpc, "unregisterNode: {}", ok ? "success" : "failed");
     return ok;
 }

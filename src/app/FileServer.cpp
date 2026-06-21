@@ -79,40 +79,37 @@ int main()
             std::string name = "FileServer";
             std::string host = cfg["FileServer"]["Host"];
             std::string svc_port = cfg["FileServer"]["Port"];
-            ThreadPoolMgr::getInstance().runNodeHeartbeat(
-                [name, instance_id, host, svc_port]() {
-                    bool registered = false;
-                    while (true)
+            ThreadPoolMgr::getInstance().runNodeHeartbeat([name, instance_id, host, svc_port]() {
+                bool registered = false;
+                while (true)
+                {
+                    if (!registered)
                     {
-                        if (!registered)
+                        if (StatusGrpcClient::getInstance().registerNode(name, instance_id, host,
+                                                                         svc_port))
                         {
-                            if (StatusGrpcClient::getInstance().registerChatNode(
-                                    name, instance_id, host, svc_port))
-                            {
-                                registered = true;
-                                Log::info(LogModule::App,
-                                          "FileNodeHeartbeat: registered successfully");
-                            }
-                            else
-                            {
-                                Log::warn(LogModule::App,
-                                          "FileNodeHeartbeat: register failed, will retry");
-                            }
+                            registered = true;
+                            Log::info(LogModule::App, "FileNodeHeartbeat: registered successfully");
                         }
                         else
                         {
-                            if (!StatusGrpcClient::getInstance().heartbeatChatNode(name,
-                                                                                   instance_id))
-                            {
-                                Log::warn(LogModule::App,
-                                          "FileNodeHeartbeat: heartbeat failed, will re-register");
-                                registered = false;
-                            }
+                            Log::warn(LogModule::App,
+                                      "FileNodeHeartbeat: register failed, will retry");
                         }
-                        for (int i = 0; i < 100; ++i)
-                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
-                });
+                    else
+                    {
+                        if (!StatusGrpcClient::getInstance().heartbeatNode(name, instance_id))
+                        {
+                            Log::warn(LogModule::App,
+                                      "FileNodeHeartbeat: heartbeat failed, will re-register");
+                            registered = false;
+                        }
+                    }
+                    for (int i = 0; i < 100; ++i)
+                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                }
+            });
         }
 
         // 7. MySQL 健康检查 → 挂在 acceptor 的 io_context 上

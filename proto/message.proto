@@ -13,7 +13,7 @@ message ValidateTokenRsp {
 }
 
 // ---- 节点注册与心跳 ----
-message RegisterChatNodeReq {
+message RegisterNodeReq {
   string name = 1;
   string client_host = 2;
   string client_port = 3;
@@ -21,30 +21,30 @@ message RegisterChatNodeReq {
   string rpc_port = 5;
   string instance_id = 6;
 }
-message RegisterChatNodeRsp {
+message RegisterNodeRsp {
   int32 error = 1;
   string name = 2;
 }
 
-message HeartbeatChatNodeReq {
+message HeartbeatNodeReq {
   string name = 1;
   string instance_id = 2;
 }
-message HeartbeatChatNodeRsp {
+message HeartbeatNodeRsp {
   int32 error = 1;
 }
 
-message UnregisterChatNodeReq {
+message UnregisterNodeReq {
   string name = 1;
   string instance_id = 2;
 }
-message UnregisterChatNodeRsp {
+message UnregisterNodeRsp {
   int32 error = 1;
 }
 
 service StatusService {
   rpc ValidateToken(ValidateTokenReq) returns (ValidateTokenRsp);
-  rpc RegisterChatNode(RegisterChatNodeReq) returns (RegisterChatNodeRsp);
-  rpc HeartbeatChatNode(HeartbeatChatNodeReq) returns (HeartbeatChatNodeRsp);
-  rpc UnregisterChatNode(UnregisterChatNodeReq) returns (UnregisterChatNodeRsp);
+  rpc RegisterNode(RegisterNodeReq) returns (RegisterNodeRsp);
+  rpc HeartbeatNode(HeartbeatNodeReq) returns (HeartbeatNodeRsp);
+  rpc UnregisterNode(UnregisterNodeReq) returns (UnregisterNodeRsp);
 }
