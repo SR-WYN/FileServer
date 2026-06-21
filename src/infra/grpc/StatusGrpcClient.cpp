@@ -62,20 +62,23 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
 }
 
 bool StatusGrpcClient::registerNode(const std::string &name, const std::string &instance_id,
-                                    const std::string &host, const std::string &port)
+                                    const std::string &client_host,
+                                    const std::string &client_port,
+                                    const std::string &rpc_host,
+                                    const std::string &rpc_port)
 {
-    Log::info(LogModule::Grpc, "registerNode: name={} instance={} {}:{}", name, instance_id, host,
-              port);
+    Log::info(LogModule::Grpc, "registerNode: name={} instance={} client={}:{} rpc={}:{}", name,
+              instance_id, client_host, client_port, rpc_host, rpc_port);
 
     ClientContext context;
     RegisterNodeRsp reply;
     RegisterNodeReq request;
     request.set_name(name);
     request.set_instance_id(instance_id);
-    request.set_client_host(host);
-    request.set_client_port(port);
-    request.set_rpc_host("");
-    request.set_rpc_port("");
+    request.set_client_host(client_host);
+    request.set_client_port(client_port);
+    request.set_rpc_host(rpc_host);
+    request.set_rpc_port(rpc_port);
 
     auto stub = _pool->getConnection();
     if (!stub)

@@ -48,3 +48,16 @@ service StatusService {
   rpc HeartbeatNode(HeartbeatNodeReq) returns (HeartbeatNodeRsp);
   rpc UnregisterNode(UnregisterNodeReq) returns (UnregisterNodeRsp);
 }
+
+// ---- 文件服务心跳/健康检查 ----
+message FileHeartbeatReq {
+  string instance_id = 1;
+}
+
+message FileHeartbeatRsp {
+  int32 error = 1;
+}
+
+service FileService {
+  rpc Heartbeat(FileHeartbeatReq) returns (FileHeartbeatRsp);
+}

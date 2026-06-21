@@ -4,6 +4,7 @@
 #include "ConfigMgr.h"
 #include "FileController.h"
 #include "FileDaoImpl.h"
+#include "FileGrpcServiceImpl.h"
 #include "FileStorageImpl.h"
 #include "FileValidatorImpl.h"
 #include "Log.h"
@@ -16,6 +17,7 @@
 #include "ThreadPoolMgr.h"
 
 #include <boost/asio.hpp>
+#include <grpcpp/grpcpp.h>
 
 #include <atomic>
 #include <chrono>
@@ -26,6 +28,7 @@
 static std::atomic<bool> g_quit{false};
 static std::unique_ptr<boost::asio::io_context> g_ioc;
 static std::shared_ptr<CServer> g_server;
+static std::unique_ptr<grpc::Server> g_grpc_server;
 
 int main()
 {
@@ -70,7 +73,25 @@ int main()
         g_server = std::make_shared<CServer>(*g_ioc, port);
         g_server->start();
 
-        // 6. 启动心跳注册 → 线程池管理
+        // 6. 启动 gRPC 服务
+        std::string rpc_host = cfg["FileServer"]["RpcHost"];
+        std::string rpc_port = cfg["FileServer"]["RpcPort"];
+        const std::string grpc_address = rpc_host + ":" + rpc_port;
+
+        FileGrpcServiceImpl file_grpc_service;
+        grpc::ServerBuilder grpc_builder;
+        grpc_builder.AddListeningPort(grpc_address, grpc::InsecureServerCredentials());
+        grpc_builder.RegisterService(&file_grpc_service);
+        g_grpc_server = grpc_builder.BuildAndStart();
+        if (!g_grpc_server)
+        {
+            LOGE(LogModule::App, "Failed to start gRPC server on {}", grpc_address);
+            ThreadPoolMgr::getInstance().joinNodeHeartbeat();
+            return EXIT_FAILURE;
+        }
+        LOGI(LogModule::App, "gRPC server listening on {}", grpc_address);
+
+        // 7. 启动心跳注册 → 线程池管理
         {
             auto now = std::chrono::duration_cast<std::chrono::milliseconds>(
                            std::chrono::system_clock::now().time_since_epoch())
@@ -79,37 +100,39 @@ int main()
             std::string name = "FileServer";
             std::string host = cfg["FileServer"]["Host"];
             std::string svc_port = cfg["FileServer"]["Port"];
-            ThreadPoolMgr::getInstance().runNodeHeartbeat([name, instance_id, host, svc_port]() {
-                bool registered = false;
-                while (true)
-                {
-                    if (!registered)
+            ThreadPoolMgr::getInstance().runNodeHeartbeat(
+                [name, instance_id, host, svc_port, rpc_host, rpc_port]() {
+                    bool registered = false;
+                    while (true)
                     {
-                        if (StatusGrpcClient::getInstance().registerNode(name, instance_id, host,
-                                                                         svc_port))
+                        if (!registered)
                         {
-                            registered = true;
-                            Log::info(LogModule::App, "FileNodeHeartbeat: registered successfully");
+                            if (StatusGrpcClient::getInstance().registerNode(
+                                    name, instance_id, host, svc_port, rpc_host, rpc_port))
+                            {
+                                registered = true;
+                                Log::info(LogModule::App,
+                                          "FileNodeHeartbeat: registered successfully");
+                            }
+                            else
+                            {
+                                Log::warn(LogModule::App,
+                                          "FileNodeHeartbeat: register failed, will retry");
+                            }
                         }
                         else
                         {
-                            Log::warn(LogModule::App,
-                                      "FileNodeHeartbeat: register failed, will retry");
+                            if (!StatusGrpcClient::getInstance().heartbeatNode(name, instance_id))
+                            {
+                                Log::warn(LogModule::App,
+                                          "FileNodeHeartbeat: heartbeat failed, will re-register");
+                                registered = false;
+                            }
                         }
+                        for (int i = 0; i < 100; ++i)
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
                     }
-                    else
-                    {
-                        if (!StatusGrpcClient::getInstance().heartbeatNode(name, instance_id))
-                        {
-                            Log::warn(LogModule::App,
-                                      "FileNodeHeartbeat: heartbeat failed, will re-register");
-                            registered = false;
-                        }
-                    }
-                    for (int i = 0; i < 100; ++i)
-                        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-                }
-            });
+                });
         }
 
         // 7. MySQL 健康检查 → 挂在 acceptor 的 io_context 上
@@ -122,6 +145,10 @@ int main()
             {
                 LOGI(LogModule::App, "Signal {} received, shutting down...", sig);
                 g_quit.store(true);
+                if (g_grpc_server)
+                {
+                    g_grpc_server->Shutdown();
+                }
                 g_ioc->stop();
             }
         });

@@ -189,13 +189,38 @@ void FileController::handleUploadImage(std::shared_ptr<HttpConnection> conn)
         return;
     }
 
-    // 5. 返回成功
+    // 5. 返回成功（V1 返回绝对 URL，方便接收方直接下载）
     Json::Value resp;
     resp["error"] = ErrorCodes::SUCCESS;
-    resp["url"] = "/files/" + relative_path;
+    std::string base_url = getBaseUrl(conn);
+    if (base_url.empty())
+    {
+        resp["url"] = "/files/" + relative_path;
+    }
+    else
+    {
+        resp["url"] = base_url + "/files/" + relative_path;
+    }
     utils::makeJsonResponse(conn, resp);
     Log::info(LogModule::Http, "handleUploadImage: success uid={}, url={}", uid,
               resp["url"].asString());
+}
+
+std::string FileController::getBaseUrl(std::shared_ptr<HttpConnection> conn)
+{
+    auto &request = conn->getRequest();
+    auto host = request[http::field::host];
+    if (host.empty())
+    {
+        return "";
+    }
+    std::string scheme = "http";
+    auto x_forwarded_proto = request.base()["X-Forwarded-Proto"];
+    if (!x_forwarded_proto.empty())
+    {
+        scheme = std::string(x_forwarded_proto);
+    }
+    return scheme + "://" + std::string(host);
 }
 
 void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)

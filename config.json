@@ -5,7 +5,9 @@
   },
   "FileServer": {
     "Host": "127.0.0.1",
-    "Port": "10080"
+    "Port": "10080",
+    "RpcHost": "127.0.0.1",
+    "RpcPort": "10081"
   },
   "StatusServer": {
     "Host": "127.0.0.1",

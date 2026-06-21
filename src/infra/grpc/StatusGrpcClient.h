@@ -27,7 +27,8 @@ public:
 
     // 注册节点到 StatusServer
     bool registerNode(const std::string &name, const std::string &instance_id,
-                      const std::string &host, const std::string &port);
+                      const std::string &client_host, const std::string &client_port,
+                      const std::string &rpc_host, const std::string &rpc_port);
 
     // 发送节点心跳
     bool heartbeatNode(const std::string &name, const std::string &instance_id);

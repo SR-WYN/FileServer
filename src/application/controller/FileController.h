@@ -32,6 +32,9 @@ private:
     // 生成唯一文件名
     static std::string generateFileName(int uid, const std::string &originalName);
 
+    // 根据请求 Host 头构造本机访问基地址，失败返回空
+    static std::string getBaseUrl(std::shared_ptr<HttpConnection> conn);
+
     std::shared_ptr<FileStorage> _storage;
     std::shared_ptr<FileDao> _fileDao;
     std::shared_ptr<StatusServiceClient> _statusClient;
