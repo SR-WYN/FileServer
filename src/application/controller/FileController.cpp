@@ -16,18 +16,6 @@
 
 #include <chrono>
 
-namespace
-{
-std::string maskToken(const std::string &token)
-{
-    if (token.empty())
-    {
-        return "empty";
-    }
-    return token.substr(0, std::min<size_t>(8, token.size())) + "***";
-}
-} // namespace
-
 FileController::FileController(std::shared_ptr<FileStorage> storage,
                                std::shared_ptr<FileDao> fileDao,
                                std::shared_ptr<StatusServiceClient> statusClient,
@@ -71,8 +59,7 @@ bool FileController::authenticateRequest(std::shared_ptr<HttpConnection> conn, i
         return false;
     }
 
-    Log::debug(LogModule::Http, "authenticateRequest: validating uid={} token={}", uid,
-               maskToken(token));
+    Log::debug(LogModule::Http, "authenticateRequest: validating uid={} token={}", uid, token);
     auto result = _statusClient->validateToken(uid, token);
     if (result.error != ErrorCodes::SUCCESS)
     {
@@ -121,8 +108,8 @@ void FileController::handleUploadAvatar(std::shared_ptr<HttpConnection> conn)
     // 3. 校验 — 委托给接口
     if (!_validator->isAllowedExtension(parsed.filename))
     {
-        Log::warn(LogModule::Http, "handleUploadAvatar: invalid extension uid={} filename={}",
-                  uid, parsed.filename);
+        Log::warn(LogModule::Http, "handleUploadAvatar: invalid extension uid={} filename={}", uid,
+                  parsed.filename);
         utils::makeErrorResponse(conn, ErrorCodes::FILE_TYPE_INVALID);
         return;
     }
@@ -290,8 +277,8 @@ void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
     const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
                              std::chrono::steady_clock::now() - start)
                              .count();
-    Log::info(LogModule::Http, "handleDownloadFile: served {} ({} bytes) cost={}ms",
-              relative_path, file_data.size(), cost_ms);
+    Log::info(LogModule::Http, "handleDownloadFile: served {} ({} bytes) cost={}ms", relative_path,
+              file_data.size(), cost_ms);
 }
 
 void FileController::handlePing(std::shared_ptr<HttpConnection> conn)

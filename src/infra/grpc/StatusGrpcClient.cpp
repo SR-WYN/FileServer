@@ -6,7 +6,6 @@
 #include "error_codes.h"
 #include "utils.h"
 
-#include <algorithm>
 #include <chrono>
 
 using message::HeartbeatNodeReq;
@@ -17,18 +16,6 @@ using message::UnregisterNodeReq;
 using message::UnregisterNodeRsp;
 using message::ValidateTokenReq;
 using message::ValidateTokenRsp;
-
-namespace
-{
-std::string maskToken(const std::string &token)
-{
-    if (token.empty())
-    {
-        return "empty";
-    }
-    return token.substr(0, std::min<size_t>(8, token.size())) + "***";
-}
-} // namespace
 
 StatusGrpcClient::StatusGrpcClient()
 {
@@ -46,8 +33,7 @@ StatusGrpcClient::~StatusGrpcClient()
 
 int StatusGrpcClient::validateToken(int uid, const std::string &token)
 {
-    Log::debug(LogModule::Grpc, "StatusGrpcClient::validateToken uid={} token={}", uid,
-               maskToken(token));
+    Log::debug(LogModule::Grpc, "StatusGrpcClient::validateToken uid={} token={}", uid, token);
     const auto start = std::chrono::steady_clock::now();
 
     ClientContext context;
@@ -93,10 +79,8 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
 }
 
 bool StatusGrpcClient::registerNode(const std::string &name, const std::string &instance_id,
-                                    const std::string &client_host,
-                                    const std::string &client_port,
-                                    const std::string &rpc_host,
-                                    const std::string &rpc_port)
+                                    const std::string &client_host, const std::string &client_port,
+                                    const std::string &rpc_host, const std::string &rpc_port)
 {
     Log::info(LogModule::Grpc, "registerNode: name={} instance={} client={}:{} rpc={}:{}", name,
               instance_id, client_host, client_port, rpc_host, rpc_port);
@@ -128,8 +112,8 @@ bool StatusGrpcClient::registerNode(const std::string &name, const std::string &
 
     if (!status.ok())
     {
-        Log::error(LogModule::Grpc, "registerNode RPC failed: {} cost={}ms",
-                   status.error_message(), cost_ms);
+        Log::error(LogModule::Grpc, "registerNode RPC failed: {} cost={}ms", status.error_message(),
+                   cost_ms);
         return false;
     }
 
@@ -142,7 +126,7 @@ bool StatusGrpcClient::registerNode(const std::string &name, const std::string &
     else
     {
         Log::warn(LogModule::Grpc, "registerNode failed: name={} instance={} err={} cost={}ms",
-                   name, instance_id, reply.error(), cost_ms);
+                  name, instance_id, reply.error(), cost_ms);
     }
     return ok;
 }
@@ -168,7 +152,7 @@ bool StatusGrpcClient::heartbeatNode(const std::string &name, const std::string 
     if (!status.ok())
     {
         Log::warn(LogModule::Grpc, "heartbeatNode RPC failed: name={} err={}", name,
-                   status.error_message());
+                  status.error_message());
         return false;
     }
 
@@ -176,7 +160,7 @@ bool StatusGrpcClient::heartbeatNode(const std::string &name, const std::string 
     if (!ok)
     {
         Log::warn(LogModule::Grpc, "heartbeatNode failed: name={} instance={} err={}", name,
-                   instance_id, reply.error());
+                  instance_id, reply.error());
     }
     else
     {
