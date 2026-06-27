@@ -5,6 +5,7 @@
 #include <boost/beast.hpp>
 #include <boost/beast/http.hpp>
 #include <boost/beast/http/dynamic_body.hpp>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 
@@ -34,11 +35,15 @@ private:
     void handleReq();
     void preParseGetParam();
 
-    tcp::socket _socket;                          ///< TCP 套接字
-    beast::flat_buffer _buffer{8192};             ///< 读缓冲区
-    http::request<http::dynamic_body> _request;   ///< 当前请求
-    http::response<http::dynamic_body> _response; ///< 待发送响应
+    tcp::socket _socket;                                                           ///< TCP 套接字
+    beast::flat_buffer _buffer{8192};                                              ///< 读缓冲区
+    http::request<http::dynamic_body> _request;                                    ///< 当前请求
+    http::response<http::dynamic_body> _response;                                  ///< 待发送响应
     net::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)}; ///< 超时定时器
-    std::string _get_url; ///< GET URL 路径（不含查询参数）
+    std::string _get_url;                                     ///< GET URL 路径（不含查询参数）
     std::unordered_map<std::string, std::string> _get_params; ///< GET URL 查询参数
+
+    std::chrono::steady_clock::time_point _req_start; ///< 请求开始时间点
+    std::string _peer_ip{"unknown"};                  ///< 对端 IP
+    unsigned short _peer_port{0};                     ///< 对端端口
 };

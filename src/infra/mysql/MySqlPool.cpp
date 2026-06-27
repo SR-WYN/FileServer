@@ -180,20 +180,34 @@ bool MySqlPool::reconnect(long long timestamp)
 
 std::unique_ptr<SqlConnection> MySqlPool::getConnection()
 {
+    const auto start = std::chrono::steady_clock::now();
     std::unique_lock<std::mutex> lock(_mutex);
-    _cond.wait(lock, [this]() {
+    bool got = _cond.wait_for(lock, std::chrono::seconds(5), [this]() {
         if (_b_stop)
         {
             return true;
         }
         return !_pool.empty();
     });
+
+    if (!got)
+    {
+        Log::error(LogModule::Mysql, "getConnection: timeout waiting for available connection");
+        return nullptr;
+    }
+
     if (_b_stop)
     {
         return nullptr;
     }
     std::unique_ptr<SqlConnection> con(std::move(_pool.front()));
     _pool.pop();
+
+    const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
+    Log::debug(LogModule::Mysql, "getConnection: acquired connection cost={}ms pool_size={}",
+               cost_ms, _pool.size());
     return con;
 }
 

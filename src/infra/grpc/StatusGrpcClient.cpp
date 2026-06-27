@@ -6,6 +6,9 @@
 #include "error_codes.h"
 #include "utils.h"
 
+#include <algorithm>
+#include <chrono>
+
 using message::HeartbeatNodeReq;
 using message::HeartbeatNodeRsp;
 using message::RegisterNodeReq;
@@ -14,6 +17,18 @@ using message::UnregisterNodeReq;
 using message::UnregisterNodeRsp;
 using message::ValidateTokenReq;
 using message::ValidateTokenRsp;
+
+namespace
+{
+std::string maskToken(const std::string &token)
+{
+    if (token.empty())
+    {
+        return "empty";
+    }
+    return token.substr(0, std::min<size_t>(8, token.size())) + "***";
+}
+} // namespace
 
 StatusGrpcClient::StatusGrpcClient()
 {
@@ -31,7 +46,10 @@ StatusGrpcClient::~StatusGrpcClient()
 
 int StatusGrpcClient::validateToken(int uid, const std::string &token)
 {
-    Log::info(LogModule::Grpc, "StatusGrpcClient::validateToken uid={}", uid);
+    Log::debug(LogModule::Grpc, "StatusGrpcClient::validateToken uid={} token={}", uid,
+               maskToken(token));
+    const auto start = std::chrono::steady_clock::now();
+
     ClientContext context;
     ValidateTokenRsp reply;
     ValidateTokenReq request;
@@ -48,14 +66,27 @@ int StatusGrpcClient::validateToken(int uid, const std::string &token)
     utils::Defer defer([&stub, this]() {
         _pool->returnConnection(std::move(stub));
     });
+
+    const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
+
     if (status.ok())
     {
-        Log::info(LogModule::Grpc, "validateToken success: uid={}, error={}", uid, reply.error());
+        if (reply.error() == ErrorCodes::SUCCESS)
+        {
+            Log::debug(LogModule::Grpc, "validateToken success: uid={} cost={}ms", uid, cost_ms);
+        }
+        else
+        {
+            Log::warn(LogModule::Grpc, "validateToken failed: uid={} err={} cost={}ms", uid,
+                      reply.error(), cost_ms);
+        }
         return reply.error();
     }
     else
     {
-        Log::error(LogModule::Grpc, "validateToken RPC failed: uid={}, error_code={}, msg={}", uid,
+        Log::error(LogModule::Grpc, "validateToken RPC failed: uid={} error_code={} msg={}", uid,
                    status.error_code(), status.error_message());
         return ErrorCodes::RPC_FAILED;
     }
@@ -69,6 +100,7 @@ bool StatusGrpcClient::registerNode(const std::string &name, const std::string &
 {
     Log::info(LogModule::Grpc, "registerNode: name={} instance={} client={}:{} rpc={}:{}", name,
               instance_id, client_host, client_port, rpc_host, rpc_port);
+    const auto start = std::chrono::steady_clock::now();
 
     ClientContext context;
     RegisterNodeRsp reply;
@@ -82,20 +114,36 @@ bool StatusGrpcClient::registerNode(const std::string &name, const std::string &
 
     auto stub = _pool->getConnection();
     if (!stub)
+    {
+        Log::error(LogModule::Grpc, "registerNode: failed to get connection from pool");
         return false;
+    }
 
     Status status = stub->RegisterNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
 
+    const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
+
     if (!status.ok())
     {
-        Log::error(LogModule::Grpc, "registerNode RPC failed: {}", status.error_message());
+        Log::error(LogModule::Grpc, "registerNode RPC failed: {} cost={}ms",
+                   status.error_message(), cost_ms);
         return false;
     }
 
     bool ok = (reply.error() == ErrorCodes::SUCCESS);
-    Log::info(LogModule::Grpc, "registerNode: {} error={}", ok ? "success" : "failed",
-              reply.error());
+    if (ok)
+    {
+        Log::info(LogModule::Grpc, "registerNode success: name={} instance={} cost={}ms", name,
+                  instance_id, cost_ms);
+    }
+    else
+    {
+        Log::warn(LogModule::Grpc, "registerNode failed: name={} instance={} err={} cost={}ms",
+                   name, instance_id, reply.error(), cost_ms);
+    }
     return ok;
 }
 
@@ -109,18 +157,33 @@ bool StatusGrpcClient::heartbeatNode(const std::string &name, const std::string 
 
     auto stub = _pool->getConnection();
     if (!stub)
+    {
+        Log::error(LogModule::Grpc, "heartbeatNode: failed to get connection from pool");
         return false;
+    }
 
     Status status = stub->HeartbeatNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
 
     if (!status.ok())
     {
-        Log::warn(LogModule::Grpc, "heartbeatNode RPC failed: {}", status.error_message());
+        Log::warn(LogModule::Grpc, "heartbeatNode RPC failed: name={} err={}", name,
+                   status.error_message());
         return false;
     }
-    Log::debug(LogModule::Grpc, "heartbeatNode success, name={}", name);
-    return reply.error() == ErrorCodes::SUCCESS;
+
+    bool ok = reply.error() == ErrorCodes::SUCCESS;
+    if (!ok)
+    {
+        Log::warn(LogModule::Grpc, "heartbeatNode failed: name={} instance={} err={}", name,
+                   instance_id, reply.error());
+    }
+    else
+    {
+        Log::debug(LogModule::Grpc, "heartbeatNode success, name={} instance={}", name,
+                   instance_id);
+    }
+    return ok;
 }
 
 bool StatusGrpcClient::unregisterNode(const std::string &name, const std::string &instance_id)
@@ -135,7 +198,10 @@ bool StatusGrpcClient::unregisterNode(const std::string &name, const std::string
 
     auto stub = _pool->getConnection();
     if (!stub)
+    {
+        Log::error(LogModule::Grpc, "unregisterNode: failed to get connection from pool");
         return false;
+    }
 
     Status status = stub->UnregisterNode(&context, request, &reply);
     _pool->returnConnection(std::move(stub));
@@ -147,6 +213,15 @@ bool StatusGrpcClient::unregisterNode(const std::string &name, const std::string
     }
 
     bool ok = (reply.error() == ErrorCodes::SUCCESS);
-    Log::info(LogModule::Grpc, "unregisterNode: {}", ok ? "success" : "failed");
+    if (ok)
+    {
+        Log::info(LogModule::Grpc, "unregisterNode success: name={} instance={}", name,
+                  instance_id);
+    }
+    else
+    {
+        Log::warn(LogModule::Grpc, "unregisterNode failed: name={} instance={} err={}", name,
+                  instance_id, reply.error());
+    }
     return ok;
 }

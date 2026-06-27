@@ -43,10 +43,12 @@ std::string SectionInfo::operator[](const std::string &key)
 ConfigMgr::ConfigMgr()
 {
     const boost::filesystem::path config_path = boost::filesystem::current_path() / "config.json";
+    Log::info(LogModule::Config, "ConfigMgr loading config from {}", config_path.string());
 
     std::ifstream file(config_path.string());
     if (!file.is_open())
     {
+        Log::error(LogModule::Config, "ConfigMgr failed to open {}", config_path.string());
         return;
     }
 
@@ -54,6 +56,7 @@ ConfigMgr::ConfigMgr()
     Json::Reader reader;
     if (!reader.parse(file, root))
     {
+        Log::error(LogModule::Config, "ConfigMgr failed to parse {}", config_path.string());
         return;
     }
 

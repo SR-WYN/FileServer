@@ -11,6 +11,11 @@ MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> 
 
     std::string body = boost::beast::buffers_to_string(request.body().data());
     std::string content_type(request[http::field::content_type]);
+    const auto content_length = request[http::field::content_length];
+
+    Log::debug(LogModule::Http,
+               "MultipartParserImpl: content-type='{}' content-length='{}' body={} bytes",
+               content_type, content_length, body.size());
 
     // 提取 boundary
     auto pos = content_type.find("boundary=");
@@ -29,7 +34,7 @@ MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> 
     auto body_start = body.find(delimiter);
     if (body_start == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParserImpl: delimiter not found");
+        Log::warn(LogModule::Http, "MultipartParserImpl: delimiter '{}' not found", delimiter);
         return result;
     }
 
@@ -48,7 +53,8 @@ MultipartParseResult MultipartParserImpl::parse(std::shared_ptr<HttpConnection> 
     auto data_start = body.find("\r\n\r\n", filename_end);
     if (data_start == std::string::npos)
     {
-        Log::warn(LogModule::Http, "MultipartParserImpl: data start not found");
+        Log::warn(LogModule::Http, "MultipartParserImpl: data start not found after filename={}",
+                  result.filename);
         return result;
     }
     data_start += 4;

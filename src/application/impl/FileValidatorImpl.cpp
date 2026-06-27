@@ -41,15 +41,31 @@ bool FileValidatorImpl::isAllowedExtension(const std::string &filename)
 {
     auto pos = filename.rfind('.');
     if (pos == std::string::npos)
+    {
+        Log::warn(LogModule::Http, "FileValidator: no extension in filename='{}'", filename);
         return false;
+    }
     std::string ext = filename.substr(pos);
     for (auto &c : ext)
         c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-    return _allowedExtensions.find(ext) != _allowedExtensions.end();
+
+    bool ok = _allowedExtensions.find(ext) != _allowedExtensions.end();
+    if (!ok)
+    {
+        Log::warn(LogModule::Http, "FileValidator: extension '{}' not allowed for filename='{}'",
+                  ext, filename);
+    }
+    return ok;
 }
 
 bool FileValidatorImpl::isFileSizeValid(size_t size, bool isAvatar)
 {
-    return isAvatar ? (size <= static_cast<size_t>(_maxAvatarSize))
-                    : (size <= static_cast<size_t>(_maxImageSize));
+    const auto limit = isAvatar ? _maxAvatarSize : _maxImageSize;
+    bool ok = size <= static_cast<size_t>(limit);
+    if (!ok)
+    {
+        Log::warn(LogModule::Http, "FileValidator: size {} exceeds limit {} for {}", size, limit,
+                  isAvatar ? "avatar" : "image");
+    }
+    return ok;
 }

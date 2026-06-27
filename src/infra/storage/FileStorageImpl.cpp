@@ -4,6 +4,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <chrono>
 #include <fstream>
 
 FileStorageImpl::FileStorageImpl(const std::string &rootDir) : _rootDir(rootDir)
@@ -25,7 +26,19 @@ std::string FileStorageImpl::saveFile(const std::string &category, const std::st
     boost::filesystem::path dir = _rootDir + "/" + category;
     boost::filesystem::create_directories(dir);
 
+    // 简单磁盘空间检查（需要时启用）
+    boost::system::error_code ec;
+    auto space = boost::filesystem::space(dir, ec);
+    if (!ec && space.available < static_cast<boost::uintmax_t>(size) + 1024 * 1024)
+    {
+        Log::error(LogModule::File, "saveFile: disk space insufficient for {} ({} bytes)",
+                   filename, size);
+        return {};
+    }
+
     boost::filesystem::path file_path = dir / filename;
+    const auto start = std::chrono::steady_clock::now();
+
     std::ofstream ofs(file_path.string(), std::ios::binary);
     if (!ofs)
     {
@@ -41,13 +54,18 @@ std::string FileStorageImpl::saveFile(const std::string &category, const std::st
     }
 
     std::string relative = category + "/" + filename;
-    Log::info(LogModule::File, "saveFile: saved {} ({} bytes)", relative, size);
+    const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
+    Log::info(LogModule::File, "saveFile: saved {} ({} bytes) cost={}ms", relative, size, cost_ms);
     return relative;
 }
 
 bool FileStorageImpl::readFile(const std::string &relativePath, std::vector<char> &outData)
 {
     boost::filesystem::path file_path = _rootDir + "/" + relativePath;
+    const auto start = std::chrono::steady_clock::now();
+
     std::ifstream ifs(file_path.string(), std::ios::binary | std::ios::ate);
     if (!ifs)
     {
@@ -65,7 +83,11 @@ bool FileStorageImpl::readFile(const std::string &relativePath, std::vector<char
         return false;
     }
 
-    Log::debug(LogModule::File, "readFile: read {} ({} bytes)", relativePath, size);
+    const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                             std::chrono::steady_clock::now() - start)
+                             .count();
+    Log::debug(LogModule::File, "readFile: read {} ({} bytes) cost={}ms", relativePath, size,
+               cost_ms);
     return true;
 }
 

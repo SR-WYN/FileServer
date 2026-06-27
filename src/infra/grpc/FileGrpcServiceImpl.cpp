@@ -11,5 +11,7 @@ Status FileGrpcServiceImpl::Heartbeat(ServerContext* context, const FileHeartbea
          request->instance_id());
 
     reply->set_error(ErrorCodes::SUCCESS);
+    LOGD(LogModule::Grpc, "FileGrpcServiceImpl::Heartbeat instance={} ok",
+         request->instance_id());
     return Status::OK;
 }

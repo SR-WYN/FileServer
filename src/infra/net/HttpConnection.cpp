@@ -4,6 +4,8 @@
 #include "LogicSystem.h"
 #include "utils.h"
 
+#include <chrono>
+
 HttpConnection::HttpConnection(boost::asio::io_context &ioc) : _socket(ioc)
 {
 }
@@ -11,27 +13,42 @@ HttpConnection::HttpConnection(boost::asio::io_context &ioc) : _socket(ioc)
 void HttpConnection::start()
 {
     auto self = shared_from_this();
-    http::async_read(_socket, _buffer, _request,
-                     [self](boost::beast::error_code ec, std::size_t bytes_transferred) {
-                         try
-                         {
-                             if (ec)
-                             {
-                                 Log::error(LogModule::Http, "async_read error: {}", ec.message());
-                                 return;
-                             }
-                             boost::ignore_unused(bytes_transferred);
-                             Log::info(LogModule::Http, "Received request: {} {}",
-                                       self->_request.method_string(), self->_request.target());
-                             self->handleReq();
-                             self->checkDeadline();
-                         }
-                         catch (std::exception &e)
-                         {
-                             Log::error(LogModule::Http, "http read handler exception: {}",
-                                        e.what());
-                         }
-                     });
+    self->_req_start = std::chrono::steady_clock::now();
+
+    try
+    {
+        self->_peer_ip = self->_socket.remote_endpoint().address().to_string();
+        self->_peer_port = self->_socket.remote_endpoint().port();
+    }
+    catch (...)
+    {
+        self->_peer_ip = "unknown";
+        self->_peer_port = 0;
+    }
+
+    http::async_read(
+        _socket, _buffer, _request,
+        [self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+            try
+            {
+                if (ec)
+                {
+                    Log::error(LogModule::Http, "async_read error peer={}:{} err={}",
+                               self->_peer_ip, self->_peer_port, ec.message());
+                    return;
+                }
+                boost::ignore_unused(bytes_transferred);
+                Log::info(LogModule::Http, "Received request peer={}:{} method={} target={}",
+                          self->_peer_ip, self->_peer_port, self->_request.method_string(),
+                          self->_request.target());
+                self->handleReq();
+                self->checkDeadline();
+            }
+            catch (std::exception &e)
+            {
+                Log::error(LogModule::Http, "http read handler exception: {}", e.what());
+            }
+        });
 }
 
 void HttpConnection::preParseGetParam()
@@ -122,16 +139,26 @@ void HttpConnection::writeResponse()
 {
     auto self = shared_from_this();
     _response.content_length(_response.body().size());
-    http::async_write(_socket, _response,
-                      [self](boost::beast::error_code ec, std::size_t bytes_transferred) {
-                          if (ec)
-                          {
-                              Log::error(LogModule::Http, "async_write error: {}", ec.message());
-                          }
-                          Log::info(LogModule::Http, "Response sent, closing connection");
-                          self->_socket.shutdown(tcp::socket::shutdown_send, ec);
-                          self->_deadline.cancel();
-                      });
+    http::async_write(
+        _socket, _response, [self](boost::beast::error_code ec, std::size_t bytes_transferred) {
+            const auto cost_ms = std::chrono::duration_cast<std::chrono::milliseconds>(
+                                     std::chrono::steady_clock::now() - self->_req_start)
+                                     .count();
+            if (ec)
+            {
+                Log::error(LogModule::Http, "async_write error peer={}:{} err={} status={}",
+                           self->_peer_ip, self->_peer_port, ec.message(),
+                           static_cast<int>(self->_response.result()));
+            }
+            else
+            {
+                Log::info(LogModule::Http, "Response sent peer={}:{} status={} bytes={} cost={}ms",
+                          self->_peer_ip, self->_peer_port,
+                          static_cast<int>(self->_response.result()), bytes_transferred, cost_ms);
+            }
+            self->_socket.shutdown(tcp::socket::shutdown_send, ec);
+            self->_deadline.cancel();
+        });
 }
 
 void HttpConnection::checkDeadline()
@@ -140,7 +167,8 @@ void HttpConnection::checkDeadline()
     _deadline.async_wait([self](beast::error_code ec) {
         if (!ec)
         {
-            Log::warn(LogModule::Http, "Connection timeout, closing socket");
+            Log::warn(LogModule::Http, "Connection timeout peer={}:{} target={}", self->_peer_ip,
+                      self->_peer_port, self->_request.target());
             self->_socket.close(ec);
         }
     });
