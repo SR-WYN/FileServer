@@ -34,10 +34,14 @@ private:
     void writeResponse();
     void handleReq();
     void preParseGetParam();
+    void handleHeader(beast::error_code ec, std::size_t bytes_transferred);
+    void handleBody(beast::error_code ec, std::size_t bytes_transferred);
+    void drainBody();
+    std::uint64_t getMaxBodySize();
 
     tcp::socket _socket;                                                           ///< TCP 套接字
     beast::flat_buffer _buffer{8192};                                              ///< 读缓冲区
-    http::request<http::dynamic_body> _request;                                    ///< 当前请求
+    http::request_parser<http::dynamic_body> _parser;                              ///< 请求解析器
     http::response<http::dynamic_body> _response;                                  ///< 待发送响应
     net::steady_timer _deadline{_socket.get_executor(), std::chrono::seconds(60)}; ///< 超时定时器
     std::string _get_url;                                     ///< GET URL 路径（不含查询参数）

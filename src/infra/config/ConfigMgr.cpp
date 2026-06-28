@@ -174,6 +174,10 @@ void ConfigMgr::loadFileRules()
             section._section_datas["MaxFileSize_" + key] = root["MaxFileSize"][key].asString();
         }
     }
+    if (root.isMember("MaxBodySize") && root["MaxBodySize"].isUInt64())
+    {
+        section._section_datas["MaxBodySize"] = std::to_string(root["MaxBodySize"].asUInt64());
+    }
     _config_map["FileRules"] = section;
     Log::info(LogModule::Config, "file_rules.json loaded");
 }

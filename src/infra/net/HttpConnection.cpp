@@ -1,5 +1,6 @@
 // HttpConnection.cpp - HTTP 连接处理实现，异步读写 + 请求分发
 #include "HttpConnection.h"
+#include "ConfigMgr.h"
 #include "Log.h"
 #include "LogicSystem.h"
 #include "utils.h"
@@ -26,34 +27,103 @@ void HttpConnection::start()
         self->_peer_port = 0;
     }
 
+    http::async_read_header(
+        _socket, _buffer, _parser,
+        std::bind(&HttpConnection::handleHeader, shared_from_this(),
+                  std::placeholders::_1, std::placeholders::_2));
+}
+
+void HttpConnection::handleHeader(beast::error_code ec, std::size_t bytes_transferred)
+{
+    boost::ignore_unused(bytes_transferred);
+    if (ec)
+    {
+        Log::error(LogModule::Http, "async_read_header error peer={}:{} err={}",
+                   _peer_ip, _peer_port, ec.message());
+        return;
+    }
+
+    auto &req = _parser.get();
+    auto cl = req[http::field::content_length];
+    if (!cl.empty())
+    {
+        std::uint64_t content_length = std::stoull(std::string(cl));
+        std::uint64_t max_body = getMaxBodySize();
+        if (content_length > max_body)
+        {
+            Log::warn(LogModule::Http,
+                      "Request body too large peer={}:{} target={} content_length={} limit={}",
+                      _peer_ip, _peer_port, req.target(), content_length, max_body);
+            _response.result(http::status::payload_too_large);
+            _response.set(http::field::content_type, "application/json");
+            beast::ostream(_response.body())
+                << R"({"error":1007,"message":"file too large"})";
+            drainBody();
+            return;
+        }
+    }
+
     http::async_read(
-        _socket, _buffer, _request,
-        [self](boost::beast::error_code ec, std::size_t bytes_transferred) {
-            try
+        _socket, _buffer, _parser,
+        std::bind(&HttpConnection::handleBody, shared_from_this(),
+                  std::placeholders::_1, std::placeholders::_2));
+}
+
+void HttpConnection::handleBody(beast::error_code ec, std::size_t bytes_transferred)
+{
+    if (ec)
+    {
+        Log::error(LogModule::Http, "async_read body error peer={}:{} err={}",
+                   _peer_ip, _peer_port, ec.message());
+        return;
+    }
+    boost::ignore_unused(bytes_transferred);
+    try
+    {
+        Log::info(LogModule::Http, "Received request peer={}:{} method={} target={}",
+                  _peer_ip, _peer_port, _parser.get().method_string(),
+                  _parser.get().target());
+        handleReq();
+        checkDeadline();
+    }
+    catch (std::exception &e)
+    {
+        Log::error(LogModule::Http, "http read handler exception: {}", e.what());
+    }
+}
+
+std::uint64_t HttpConnection::getMaxBodySize()
+{
+    auto rules = ConfigMgr::getInstance()["FileRules"];
+    auto max_body = rules["MaxBodySize"];
+    if (!max_body.empty())
+    {
+        return std::stoull(max_body);
+    }
+    return 10 * 1024 * 1024 + 1024;
+}
+
+void HttpConnection::drainBody()
+{
+    auto self = shared_from_this();
+    auto drain_buf = std::make_shared<beast::flat_buffer>();
+    _socket.async_read_some(
+        drain_buf->prepare(4096),
+        [self, drain_buf](beast::error_code ec, std::size_t) {
+            if (!ec)
             {
-                if (ec)
-                {
-                    Log::error(LogModule::Http, "async_read error peer={}:{} err={}",
-                               self->_peer_ip, self->_peer_port, ec.message());
-                    return;
-                }
-                boost::ignore_unused(bytes_transferred);
-                Log::info(LogModule::Http, "Received request peer={}:{} method={} target={}",
-                          self->_peer_ip, self->_peer_port, self->_request.method_string(),
-                          self->_request.target());
-                self->handleReq();
-                self->checkDeadline();
+                self->drainBody();
             }
-            catch (std::exception &e)
+            else
             {
-                Log::error(LogModule::Http, "http read handler exception: {}", e.what());
+                self->writeResponse();
             }
         });
 }
 
 void HttpConnection::preParseGetParam()
 {
-    auto uri = _request.target();
+    auto uri = _parser.get().target();
     auto query_pos = uri.find('?');
     if (query_pos == std::string::npos)
     {
@@ -92,9 +162,9 @@ void HttpConnection::preParseGetParam()
 
 void HttpConnection::handleReq()
 {
-    _response.version(_request.version());
+    _response.version(_parser.get().version());
     _response.keep_alive(false);
-    if (_request.method() == http::verb::get)
+    if (_parser.get().method() == http::verb::get)
     {
         preParseGetParam();
         Log::info(LogModule::Http, "Handle GET: {}", _get_url);
@@ -114,13 +184,13 @@ void HttpConnection::handleReq()
         writeResponse();
         return;
     }
-    if (_request.method() == http::verb::post)
+    if (_parser.get().method() == http::verb::post)
     {
-        Log::info(LogModule::Http, "Handle POST: {}", _request.target());
-        bool success = LogicSystem::getInstance().handlePost(_request.target(), shared_from_this());
+        Log::info(LogModule::Http, "Handle POST: {}", _parser.get().target());
+        bool success = LogicSystem::getInstance().handlePost(_parser.get().target(), shared_from_this());
         if (!success)
         {
-            Log::warn(LogModule::Http, "POST url not found: {}", _request.target());
+            Log::warn(LogModule::Http, "POST url not found: {}", _parser.get().target());
             _response.result(http::status::not_found);
             _response.set(http::field::content_type, "text/plain");
             beast::ostream(_response.body()) << "url not found\r\n";
@@ -168,7 +238,7 @@ void HttpConnection::checkDeadline()
         if (!ec)
         {
             Log::warn(LogModule::Http, "Connection timeout peer={}:{} target={}", self->_peer_ip,
-                      self->_peer_port, self->_request.target());
+                      self->_peer_port, self->_parser.get().target());
             self->_socket.close(ec);
         }
     });
@@ -181,7 +251,7 @@ http::response<http::dynamic_body> &HttpConnection::getResponse()
 
 const http::request<http::dynamic_body> &HttpConnection::getRequest() const
 {
-    return _request;
+    return _parser.get();
 }
 
 const std::unordered_map<std::string, std::string> &HttpConnection::getParams() const

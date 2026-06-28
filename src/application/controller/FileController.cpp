@@ -244,6 +244,13 @@ std::string FileController::getBaseUrl(std::shared_ptr<HttpConnection> conn)
 void FileController::handleDownloadFile(std::shared_ptr<HttpConnection> conn)
 {
     const auto start = std::chrono::steady_clock::now();
+    int uid = 0;
+    if (!authenticateRequest(conn,uid))
+    {
+        utils::makeErrorResponse(conn, ErrorCodes::TOKEN_INVALID);
+        Log::warn(LogModule::Http, "handleDownloadFile: token invalid uid={}", uid);
+        return;
+    }
     auto &request = conn->getRequest();
     std::string target(request.target());
     Log::info(LogModule::Http, "handleDownloadFile: {}", target);
